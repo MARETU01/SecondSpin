@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: payment-service
+  cloud:
+    nacos:
+      config:
+        server-addr: 39.108.112.191:8848
+        file-extension: yaml
+        shared-configs:
+          - data-id: shared-jdbc.yaml
+          - data-id: shared-log.yaml
+          - data-id: shared-sentinel.yaml
+          - data-id: shared-seata.yaml
+          - data-id: shared-redis.yaml
+      discovery:
+        server-addr: 39.108.112.191:8848
