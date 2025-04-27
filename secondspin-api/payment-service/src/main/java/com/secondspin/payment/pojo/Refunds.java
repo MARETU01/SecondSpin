@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.secondspin.payment.enums.RefundReason;
+import com.secondspin.payment.enums.RefundStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -39,11 +42,11 @@ public class Refunds implements Serializable {
 
     private BigDecimal refundAmount;
 
-    private String refundReason;
+    private RefundReason refundReason;
 
     private String refundDescription;
 
-    private String status;
+    private RefundStatus status;
 
     private LocalDateTime createTime;
 

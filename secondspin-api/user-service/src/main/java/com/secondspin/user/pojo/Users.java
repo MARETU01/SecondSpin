@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.secondspin.user.enums.AccountStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -42,7 +44,7 @@ public class Users implements Serializable {
 
     private LocalDateTime registrationDate;
 
-    private String accountStatus;
+    private AccountStatus accountStatus;
 
 
 }

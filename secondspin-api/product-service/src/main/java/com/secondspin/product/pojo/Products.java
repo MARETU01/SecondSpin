@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.secondspin.product.enums.Condition;
+import com.secondspin.product.enums.ProductStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -43,9 +46,9 @@ public class Products implements Serializable {
 
     private Integer stock;
 
-    private String condition;
+    private Condition condition;
 
-    private String status;
+    private ProductStatus status;
 
     private LocalDateTime postDate;
 

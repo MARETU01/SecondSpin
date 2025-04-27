@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.secondspin.payment.enums.PaymentStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -39,7 +41,7 @@ public class Payments implements Serializable {
 
     private LocalDateTime createTime;
 
-    private String status;
+    private PaymentStatus status;
 
     private LocalDateTime payTime;
 
