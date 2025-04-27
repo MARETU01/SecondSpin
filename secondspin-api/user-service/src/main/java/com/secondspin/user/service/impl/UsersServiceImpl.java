@@ -1,14 +1,21 @@
 package com.secondspin.user.service.impl;
 
+import com.secondspin.common.dto.JwtUser;
+import com.secondspin.common.utils.JwtUtils;
+import com.secondspin.common.utils.RedisConstants;
+import com.secondspin.user.enums.AccountStatus;
 import com.secondspin.user.pojo.Users;
 import com.secondspin.user.mapper.UsersMapper;
 import com.secondspin.user.service.IUsersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.secondspin.user.utils.HashUtil;
 import com.secondspin.user.utils.MailUtil;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Random;
+import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -31,10 +38,45 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     }
 
     @Override
+    public String login(Users user) {
+        Users userToLogin = lambdaQuery().eq(Users::getEmail, user.getEmail()).one();
+        if (userToLogin == null || !HashUtil.checkPassword(user.getPassword(), userToLogin.getPassword())) {
+            return "email or password not correct";
+        }
+        if (userToLogin.getAccountStatus() != AccountStatus.ACTIVE) {
+            return "User status wrong!";
+        }
+        JwtUser jwtUser = new JwtUser();
+        jwtUser.setUserId(userToLogin.getUserId());
+        jwtUser.setUsername(userToLogin.getUsername());
+        jwtUser.setEmail(userToLogin.getEmail());
+        return JwtUtils.generateJwt(jwtUser);
+    }
+
+    @Override
     public void sendCode(Users user) {
-        Random random = new Random();
-        int verificationCode = random.nextInt(900000) + 100000;
-        stringRedisTemplate.opsForValue().set(user.getEmail(), String.valueOf(verificationCode));
+        int verificationCode = ThreadLocalRandom.current().nextInt(100000, 1000000);
+        stringRedisTemplate.opsForValue().set(
+                RedisConstants.VERIFY_CODE_KEY + user.getEmail(),
+                String.valueOf(verificationCode),
+                RedisConstants.VERIFY_CODE_TTL,
+                TimeUnit.MINUTES
+        );
         mailUtil.sendVerificationCodeMail(user.getEmail(), String.valueOf(verificationCode));
+    }
+
+    @Override
+    public String register(Users user, String verification) {
+        String storedCodde = stringRedisTemplate.opsForValue().get(
+                RedisConstants.VERIFY_CODE_KEY + user.getEmail()
+        );
+        if (!Objects.equals(storedCodde, verification)) {
+            return "verification code not correct!";
+        }
+        String encodedPassword = HashUtil.encodePassword(user.getPassword());
+        user.setPassword(encodedPassword);
+        save(user);
+        stringRedisTemplate.delete(RedisConstants.VERIFY_CODE_KEY + user.getEmail());
+        return "ok";
     }
 }

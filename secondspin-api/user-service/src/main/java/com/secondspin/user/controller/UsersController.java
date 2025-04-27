@@ -15,6 +15,11 @@ public class UsersController {
         this.usersService = usersService;
     }
 
+    @PostMapping("/login")
+    public String login(@RequestBody Users user) {
+        return usersService.login(user);
+    }
+
     @PostMapping("/send-code")
     public String registerStepOne(@RequestBody Users user) {
         usersService.sendCode(user);
@@ -22,13 +27,7 @@ public class UsersController {
     }
 
     @PostMapping("/register")
-    public String registerStepTwo(@RequestBody Users user) {
-        usersService.save(user);
-        return "ok";
-    }
-
-    @GetMapping("/test")
-    public String test() {
-        return "ok";
+    public String registerStepTwo(@RequestBody Users user, @RequestParam String verification) {
+        return usersService.register(user, verification);
     }
 }
