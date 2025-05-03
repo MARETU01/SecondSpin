@@ -36,7 +36,6 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
             return exchange.getResponse().setComplete();
         }
         JwtUser user = JwtUtils.parseJwt(token);
-        System.out.println(user);
         ServerWebExchange newExchange = exchange.mutate()
                 .request(builder -> builder.header("user-info", user.toString()))
                 .build();
