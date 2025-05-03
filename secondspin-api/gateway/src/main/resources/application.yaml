@@ -16,3 +16,9 @@ spring:
               - OPTIONS
             allowedHeaders: "*"
             allowCredentials: true
+
+secondspin:
+  auth:
+    excludePaths:
+      - /users/**
+      - /products/**

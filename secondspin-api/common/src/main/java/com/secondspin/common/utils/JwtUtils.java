@@ -3,15 +3,18 @@ package com.secondspin.common.utils;
 import com.secondspin.common.dto.JwtUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class JwtUtils {
 
-    private static final SecretKey signingKey = Jwts.SIG.HS256.key().build();
+    private static final String SECRET = "secondspinsecondspinsecondspinaa";
+    private static final SecretKey signingKey = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     private static final Long expirationTime = 86400000L;
 
     private static Map<String, Object> generateClaim(JwtUser user) {
