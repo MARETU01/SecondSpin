@@ -52,5 +52,7 @@ public class Orders implements Serializable {
 
     private LocalDateTime payTime;
 
+    private Boolean deleted;
+
 
 }

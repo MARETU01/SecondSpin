@@ -18,5 +18,4 @@ public interface IUsersService extends IService<Users> {
     void sendCode(Users user);
 
     String register(Users user, String verification);
-
 }

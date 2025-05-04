@@ -50,6 +50,8 @@ public class Products implements Serializable {
 
     private ProductStatus status;
 
+    private Boolean deleted;
+
     private LocalDateTime postDate;
 
     private Integer viewCount;

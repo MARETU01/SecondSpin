@@ -37,5 +37,7 @@ public class Address implements Serializable {
 
     private Boolean defaultAddress;
 
+    private Boolean deleted;
+
 
 }
