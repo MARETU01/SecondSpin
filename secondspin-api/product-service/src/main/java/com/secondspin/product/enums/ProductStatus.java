@@ -8,8 +8,7 @@ import lombok.Getter;
 public enum ProductStatus {
     AVAILABLE("available"),
     RESERVED("reserved"),
-    SOLD("sold"),
-    REMOVED("removed");
+    SOLD("sold");
 
     @EnumValue
     @JsonValue
