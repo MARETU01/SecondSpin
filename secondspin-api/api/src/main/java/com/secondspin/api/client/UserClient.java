@@ -1,11 +1,13 @@
 package com.secondspin.api.client;
 
+import com.secondspin.api.dto.AddressDTO;
+import feign.Param;
+import feign.RequestLine;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
 
 @FeignClient(value = "user-service")
 public interface UserClient {
 
-    @GetMapping("/hello")
-    String hello();
+    @RequestLine("GET /address/{id}")
+    AddressDTO getAddress(@Param("id") Long id);
 }

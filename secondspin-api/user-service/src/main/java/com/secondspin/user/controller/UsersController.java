@@ -20,10 +20,10 @@ public class UsersController {
         return usersService.login(user);
     }
 
-    @PostMapping("/send-code")
+    @PostMapping("/register/code")
     public String registerStepOne(@RequestBody Users user) {
         usersService.sendCode(user);
-        return "ok";
+        return "success";
     }
 
     @PostMapping("/register")

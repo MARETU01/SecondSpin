@@ -40,9 +40,14 @@ public class AddressController {
         return addressService.updateAddress(user, address);
     }
 
-    @DeleteMapping("/{id}")
-    public Boolean deleteAddress(@RequestHeader("user-info") String userJson, @PathVariable("id") Long id) throws JsonProcessingException {
+    @DeleteMapping
+    public Boolean deleteAddress(@RequestHeader("user-info") String userJson, @RequestBody List<Long> ids) throws JsonProcessingException {
         Users user = jacksonObjectMapper.readValue(userJson, Users.class);
-        return addressService.deleteAddress(user, id);
+        return addressService.deleteAddresses(user, ids);
+    }
+
+    @GetMapping("/{id}")
+    public Address getAddress(@PathVariable("id") Long id) {
+        return addressService.getAddressById(id);
     }
 }

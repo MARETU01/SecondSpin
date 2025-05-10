@@ -77,6 +77,6 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         user.setPassword(encodedPassword);
         save(user);
         stringRedisTemplate.delete(RedisConstants.VERIFY_CODE_KEY + user.getEmail());
-        return "ok";
+        return "success";
     }
 }

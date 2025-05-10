@@ -2,6 +2,7 @@ package com.secondspin.user.mapper;
 
 import com.secondspin.user.pojo.Address;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * <p>
@@ -13,4 +14,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface AddressMapper extends BaseMapper<Address> {
 
+    @Select("select * from address where address_id = #{id}")
+    Address getAddressById(Long Id);
 }

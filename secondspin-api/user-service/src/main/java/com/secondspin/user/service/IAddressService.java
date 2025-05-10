@@ -22,5 +22,7 @@ public interface IAddressService extends IService<Address> {
 
     Boolean updateAddress(Users user, Address address);
 
-    Boolean deleteAddress(Users user, Long id);
+    Boolean deleteAddresses(Users user, List<Long> ids);
+
+    Address getAddressById(Long id);
 }

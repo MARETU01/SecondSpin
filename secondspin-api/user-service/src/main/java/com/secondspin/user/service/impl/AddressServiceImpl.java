@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * <p>
@@ -79,17 +80,30 @@ public class AddressServiceImpl extends ServiceImpl<AddressMapper, Address> impl
 
     @Transactional
     @Override
-    public Boolean deleteAddress(Users user, Long id) {
-        Address address = getById(id);
-        Boolean isDefault = address.getDefaultAddress() != null ? address.getDefaultAddress() : false;
-        if (isDefault) {
-            lambdaUpdate()
+    public Boolean deleteAddresses(Users user, List<Long> ids) {
+        List<Address> addresses = listByIds(ids);
+        Optional<Address> defaultAddressToDelete = addresses.stream()
+                .filter(address -> address.getDefaultAddress() != null && address.getDefaultAddress())
+                .findFirst();
+        if (defaultAddressToDelete.isPresent()) {
+            Boolean hasOtherAddress = lambdaQuery()
                     .eq(Address::getUserId, user.getUserId())
-                    .ne(Address::getAddressId, address.getAddressId())
-                    .set(Address::getDefaultAddress, true)
-                    .last("limit 1")
-                    .update();
+                    .notIn(Address::getAddressId, ids)
+                    .exists();
+            if (hasOtherAddress) {
+                lambdaUpdate()
+                        .eq(Address::getUserId, user.getUserId())
+                        .notIn(Address::getAddressId, ids)
+                        .set(Address::getDefaultAddress, true)
+                        .last("limit 1")
+                        .update();
+            }
         }
-        return removeById(id);
+        return removeByIds(ids);
+    }
+
+    @Override
+    public Address getAddressById(Long id) {
+        return getBaseMapper().getAddressById(id);
     }
 }
