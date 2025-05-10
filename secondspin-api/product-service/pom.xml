@@ -20,6 +20,12 @@
     </properties>
 
     <dependencies>
+        <!--common-->
+        <dependency>
+            <groupId>com.secondspin</groupId>
+            <artifactId>common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <!--api-->
         <dependency>
             <groupId>com.secondspin</groupId>

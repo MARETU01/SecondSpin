@@ -22,3 +22,4 @@ secondspin:
     excludePaths:
       - /users/**
       - /products/**
+      - /categories/**
