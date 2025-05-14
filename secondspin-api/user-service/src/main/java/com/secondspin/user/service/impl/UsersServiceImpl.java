@@ -41,10 +41,10 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     public String login(Users user) {
         Users userToLogin = lambdaQuery().eq(Users::getEmail, user.getEmail()).one();
         if (userToLogin == null || !HashUtil.checkPassword(user.getPassword(), userToLogin.getPassword())) {
-            return "email or password not correct";
+            throw new RuntimeException("email or password not correct");
         }
         if (userToLogin.getAccountStatus() != AccountStatus.ACTIVE) {
-            return "User status wrong!";
+            throw new RuntimeException("user's status is not active");
         }
         JwtUser jwtUser = new JwtUser();
         jwtUser.setUserId(userToLogin.getUserId());
@@ -66,17 +66,16 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     }
 
     @Override
-    public String register(Users user, String verification) {
+    public void register(Users user, String verification) {
         String storedCodde = stringRedisTemplate.opsForValue().get(
                 RedisConstants.VERIFY_CODE_KEY + user.getEmail()
         );
         if (!Objects.equals(storedCodde, verification)) {
-            return "verification code not correct!";
+            throw new RuntimeException("verification code not correct");
         }
         String encodedPassword = HashUtil.encodePassword(user.getPassword());
         user.setPassword(encodedPassword);
         save(user);
         stringRedisTemplate.delete(RedisConstants.VERIFY_CODE_KEY + user.getEmail());
-        return "success";
     }
 }

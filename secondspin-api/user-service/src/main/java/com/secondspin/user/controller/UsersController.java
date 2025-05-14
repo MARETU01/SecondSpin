@@ -1,6 +1,7 @@
 package com.secondspin.user.controller;
 
 
+import com.secondspin.common.utils.Result;
 import com.secondspin.user.pojo.Users;
 import com.secondspin.user.service.IUsersService;
 import org.springframework.web.bind.annotation.*;
@@ -16,18 +17,32 @@ public class UsersController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody Users user) {
-        return usersService.login(user);
+    public Result<String> login(@RequestBody Users user) {
+        try {
+            return Result.success(usersService.login(user));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
     }
 
     @PostMapping("/register/code")
-    public String registerStepOne(@RequestBody Users user) {
+    public Result<Void> registerStepOne(@RequestBody Users user) {
         usersService.sendCode(user);
-        return "success";
+        return Result.success();
     }
 
     @PostMapping("/register")
-    public String registerStepTwo(@RequestBody Users user, @RequestParam String verification) {
-        return usersService.register(user, verification);
+    public Result<Void> registerStepTwo(@RequestBody Users user, @RequestParam String verification) {
+        try {
+            usersService.register(user, verification);
+            return Result.success();
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public Users getUser(@PathVariable Long id) {
+        return usersService.getById(id);
     }
 }

@@ -1,5 +1,6 @@
 package com.secondspin.product.controller;
 
+import com.secondspin.common.utils.Result;
 import com.secondspin.product.pojo.Categories;
 import com.secondspin.product.service.ICategoriesService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +20,11 @@ public class CategoriesController {
     }
 
     @GetMapping
-    public List<Categories> getCategories() {
-        return categoriesService.getAll();
+    public Result<List<Categories>> getCategories() {
+        try {
+            return Result.success(categoriesService.getAll());
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
     }
 }

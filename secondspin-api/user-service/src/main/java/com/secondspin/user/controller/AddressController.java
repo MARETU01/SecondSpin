@@ -2,10 +2,10 @@ package com.secondspin.user.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.secondspin.common.utils.Result;
 import com.secondspin.user.pojo.Address;
 import com.secondspin.user.pojo.Users;
 import com.secondspin.user.service.IAddressService;
-import lombok.SneakyThrows;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,27 +23,43 @@ public class AddressController {
     }
 
     @GetMapping
-    public List<Address> getAddress(@RequestHeader("user-info") String userJson) throws JsonProcessingException {
+    public Result<List<Address>> getAddress(@RequestHeader("user-info") String userJson) throws JsonProcessingException {
         Users user = jacksonObjectMapper.readValue(userJson, Users.class);
-        return addressService.getAddressByUserId(user.getUserId());
+        try {
+            return Result.success(addressService.getAddressByUserId(user.getUserId()));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
     }
 
     @PostMapping
-    public Boolean addAddress(@RequestHeader("user-info") String userJson, @RequestBody Address address) throws JsonProcessingException {
+    public Result<Boolean> addAddress(@RequestHeader("user-info") String userJson, @RequestBody Address address) throws JsonProcessingException {
         Users user = jacksonObjectMapper.readValue(userJson, Users.class);
-        return addressService.saveAddress(user, address);
+        try {
+            return Result.success(addressService.saveAddress(user, address));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
     }
 
     @PutMapping
-    public Boolean updateAddress(@RequestHeader("user-info") String userJson, @RequestBody Address address) throws JsonProcessingException {
+    public Result<Boolean> updateAddress(@RequestHeader("user-info") String userJson, @RequestBody Address address) throws JsonProcessingException {
         Users user = jacksonObjectMapper.readValue(userJson, Users.class);
-        return addressService.updateAddress(user, address);
+        try {
+            return Result.success(addressService.updateAddress(user, address));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
     }
 
     @DeleteMapping
-    public Boolean deleteAddress(@RequestHeader("user-info") String userJson, @RequestBody List<Long> ids) throws JsonProcessingException {
+    public Result<Boolean> deleteAddress(@RequestHeader("user-info") String userJson, @RequestBody List<Long> ids) throws JsonProcessingException {
         Users user = jacksonObjectMapper.readValue(userJson, Users.class);
-        return addressService.deleteAddresses(user, ids);
+        try {
+            return Result.success(addressService.deleteAddresses(user, ids));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")

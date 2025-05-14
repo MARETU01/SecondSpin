@@ -1,9 +1,38 @@
 package com.secondspin.product.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.secondspin.common.dto.JwtUser;
+import com.secondspin.common.utils.Result;
+import com.secondspin.product.pojo.Products;
+import com.secondspin.product.service.IProductsService;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/products")
 public class ProductsController {
+
+    final IProductsService productsService;
+    private final ObjectMapper jacksonObjectMapper;
+
+
+    public ProductsController(IProductsService productsService, ObjectMapper jacksonObjectMapper) {
+        this.productsService = productsService;
+        this.jacksonObjectMapper = jacksonObjectMapper;
+    }
+
+    @PostMapping
+    public Result<Integer> postProduct(@RequestHeader("user-info") String userJson,
+                              @RequestParam(value = "product") String productJson,
+                              @RequestParam(value = "primary_order", required = false) Integer primaryOrder,
+                              @RequestParam(value = "files", required = false) MultipartFile[] files) throws JsonProcessingException {
+        JwtUser user = jacksonObjectMapper.readValue(userJson, JwtUser.class);
+        Products product = jacksonObjectMapper.readValue(productJson, Products.class).setSellerId(user.getUserId());
+        try {
+            return Result.success(productsService.addProduct(product, files, primaryOrder));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
 }

@@ -2,6 +2,7 @@ package com.secondspin.product.service;
 
 import com.secondspin.product.pojo.Products;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IProductsService extends IService<Products> {
 
+    Integer addProduct(Products product, MultipartFile[] files, Integer primaryOrder);
 }
