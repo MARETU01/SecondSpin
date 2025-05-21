@@ -10,5 +10,6 @@ public class RedisConstants {
     public static final Long VERIFY_CODE_TTL = 10L;
 
     //  Product-service
-    public static final String CATEGORIES_KEY = APP_NAME + PRODUCT_SERVICE_PREFIX + "categories:";
+    public static final String CATEGORIES_KEY = APP_NAME + PRODUCT_SERVICE_PREFIX + "categories:all";
+    public static final String PRODUCT_INFO_KEY = APP_NAME + PRODUCT_SERVICE_PREFIX + "product:";
 }

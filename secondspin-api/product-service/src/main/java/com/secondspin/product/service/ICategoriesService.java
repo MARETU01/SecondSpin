@@ -17,5 +17,5 @@ public interface ICategoriesService extends IService<Categories> {
 
     List<Categories> getAll();
 
-    Object getCategoryById(Integer id);
+    Categories getCategoryById(Integer id);
 }

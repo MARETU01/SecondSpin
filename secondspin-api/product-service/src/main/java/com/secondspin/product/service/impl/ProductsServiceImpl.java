@@ -1,9 +1,11 @@
 package com.secondspin.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.secondspin.api.client.UserClient;
 import com.secondspin.api.dto.UserDTO;
 import com.secondspin.common.dto.JwtUser;
 import com.secondspin.common.utils.ImagesUtils;
+import com.secondspin.common.utils.RedisConstants;
 import com.secondspin.product.dto.ProductInfoDTO;
 import com.secondspin.product.pojo.Categories;
 import com.secondspin.product.pojo.ProductImages;
@@ -14,6 +16,7 @@ import com.secondspin.product.service.IFavoritesService;
 import com.secondspin.product.service.IProductImagesService;
 import com.secondspin.product.service.IProductsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,12 +40,14 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
     private final IProductImagesService productImagesService;
     private final ICategoriesService categoriesService;
     private final IFavoritesService favoritesService;
+    private final StringRedisTemplate stringRedisTemplate;
     private final UserClient userClient;
 
-    public ProductsServiceImpl(IProductImagesService productImagesService, ICategoriesService categoriesService, IFavoritesService favoritesService, UserClient userClient) {
+    public ProductsServiceImpl(IProductImagesService productImagesService, ICategoriesService categoriesService, IFavoritesService favoritesService, StringRedisTemplate stringRedisTemplate, UserClient userClient) {
         this.productImagesService = productImagesService;
         this.categoriesService = categoriesService;
         this.favoritesService = favoritesService;
+        this.stringRedisTemplate = stringRedisTemplate;
         this.userClient = userClient;
     }
 
@@ -79,6 +84,15 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
 
     @Override
     public ProductInfoDTO getProductInfo(JwtUser user, Integer id) {
+        String productJson = stringRedisTemplate.opsForValue().get(RedisConstants.PRODUCT_INFO_KEY + id);
+        if (productJson != null && !productJson.isEmpty()) {
+            ProductInfoDTO productInfo = JSON.parseObject(productJson, ProductInfoDTO.class);
+            if (user != null) {
+                productInfo.setIfFavorite(favoritesService.ifFavorite(user.getUserId(), id));
+            }
+            return productInfo;
+        }
+
         Products product = getById(id);
         if (product == null) {
             throw new RuntimeException("Product not found");
@@ -102,7 +116,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
         productInfo.setSellerName(seller.getUsername())
                 .setSellerAvatarUrl(seller.getAvatarUrl());
 
-        Categories category = categoriesService.getById(product.getCategoryId());
+        Categories category = categoriesService.getCategoryById(product.getCategoryId());
         productInfo.setCategoryName(category.getName())
                 .setCategoryIconUrl(category.getIconUrl());
 
@@ -115,6 +129,11 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
                     .findFirst()
                     .ifPresent(primaryImage -> productInfo.setPrimaryImageUrl(primaryImage.getImageUrl()));
         }
+
+        stringRedisTemplate.opsForValue().set(
+                RedisConstants.PRODUCT_INFO_KEY + product.getProductId(),
+                JSON.toJSONString(productInfo)
+        );
 
         if (user != null) {
             productInfo.setIfFavorite(favoritesService.ifFavorite(user.getUserId(), product.getProductId()));
