@@ -43,4 +43,16 @@ public class CategoriesServiceImpl extends ServiceImpl<CategoriesMapper, Categor
         }
         return categoriesList;
     }
+
+    @Override
+    public Categories getCategoryById(Integer id) {
+        List<Categories> categoriesList = getAll();
+        if (categoriesList != null && !categoriesList.isEmpty()) {
+            return categoriesList.stream()
+                    .filter(category -> id.equals(category.getCategoryId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+        return getById(id);
+    }
 }

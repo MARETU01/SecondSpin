@@ -17,4 +17,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class FavoritesServiceImpl extends ServiceImpl<FavoritesMapper, Favorites> implements IFavoritesService {
 
+    @Override
+    public Boolean ifFavorite(Integer userId, Integer productId) {
+        return lambdaQuery()
+                .eq(Favorites::getUserId, userId)
+                .eq(Favorites::getProductId, productId)
+                .one() != null;
+    }
 }

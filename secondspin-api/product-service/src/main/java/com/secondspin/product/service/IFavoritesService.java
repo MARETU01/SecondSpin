@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IFavoritesService extends IService<Favorites> {
 
+    Boolean ifFavorite(Integer userId, Integer productId);
 }

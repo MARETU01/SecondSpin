@@ -1,6 +1,8 @@
 package com.secondspin.product.pojo;
 
 import java.math.BigDecimal;
+
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -46,6 +48,7 @@ public class Products implements Serializable {
 
     private Integer stock;
 
+    @TableField("`condition`")
     private Condition condition;
 
     private ProductStatus status;

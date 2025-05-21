@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.secondspin.common.dto.JwtUser;
 import com.secondspin.common.utils.Result;
+import com.secondspin.product.dto.ProductInfoDTO;
 import com.secondspin.product.pojo.Products;
 import com.secondspin.product.service.IProductsService;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,19 @@ public class ProductsController {
         Products product = jacksonObjectMapper.readValue(productJson, Products.class).setSellerId(user.getUserId());
         try {
             return Result.success(productsService.addProduct(product, files, primaryOrder));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public Result<ProductInfoDTO> getProduct(@PathVariable("id") Integer id, @RequestHeader(value = "user-info", required = false) String userJson) throws JsonProcessingException {
+        JwtUser user = null;
+        if (userJson != null) {
+            user = jacksonObjectMapper.readValue(userJson, JwtUser.class);
+        }
+        try {
+            return Result.success(productsService.getProductInfo(user, id));
         } catch (Exception e) {
             return Result.failure(e.getMessage());
         }

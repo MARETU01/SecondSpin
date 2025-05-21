@@ -1,5 +1,6 @@
 package com.secondspin.product.pojo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -30,6 +31,7 @@ public class ProductImages implements Serializable {
 
     private Integer productId;
 
+    @TableField("`order`")
     private Integer order;
 
     private String imageUrl;

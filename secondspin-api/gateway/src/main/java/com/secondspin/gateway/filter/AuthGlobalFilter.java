@@ -32,7 +32,16 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
         if (isExcludedPath(path)) {
-            return chain.filter(exchange);
+            String token = exchange.getRequest().getHeaders().getFirst("SecondSpin");
+            if (token == null || token.isEmpty()) {
+                return chain.filter(exchange);
+            }
+            JwtUser user = JwtUtils.parseJwt(token);
+            String userJson = jacksonObjectMapper.writeValueAsString(user);
+            ServerWebExchange newExchange = exchange.mutate()
+                    .request(builder -> builder.header("user-info", userJson))
+                    .build();
+            return chain.filter(newExchange);
         }
         String token = exchange.getRequest().getHeaders().getFirst("SecondSpin");
         if (token == null || token.isEmpty()) {
