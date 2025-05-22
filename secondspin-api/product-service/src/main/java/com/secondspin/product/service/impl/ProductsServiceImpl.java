@@ -24,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +38,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> implements IProductsService {
+
+    Random random = new Random();
 
     private final IProductImagesService productImagesService;
     private final ICategoriesService categoriesService;
@@ -85,7 +89,10 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
     @Override
     public ProductInfoDTO getProductInfo(JwtUser user, Integer id) {
         String productJson = stringRedisTemplate.opsForValue().get(RedisConstants.PRODUCT_INFO_KEY + id);
-        if (productJson != null && !productJson.isEmpty()) {
+        if (productJson != null) {
+            if (RedisConstants.NULL_VALUE.equals(productJson)) {
+                throw new RuntimeException("Product not found");
+            }
             ProductInfoDTO productInfo = JSON.parseObject(productJson, ProductInfoDTO.class);
             if (user != null) {
                 productInfo.setIfFavorite(favoritesService.ifFavorite(user.getUserId(), id));
@@ -93,52 +100,81 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
             return productInfo;
         }
 
-        Products product = getById(id);
-        if (product == null) {
-            throw new RuntimeException("Product not found");
+        boolean locked = false;
+        try {
+            locked = Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(
+                    RedisConstants.PRODUCT_INFO_LOCK_KEY + id,
+                    "1",
+                    RedisConstants.LOCK_TTL,
+                    TimeUnit.SECONDS
+            ));
+            if (!locked) {
+                Thread.sleep(500);
+                return getProductInfo(user, id);
+            } else {
+                Products product = getById(id);
+                if (product == null) {
+                    stringRedisTemplate.opsForValue().set(
+                            RedisConstants.PRODUCT_INFO_KEY + id,
+                            RedisConstants.NULL_VALUE,
+                            RedisConstants.NULL_CACHE_TTL,
+                            TimeUnit.MINUTES
+                    );
+                    throw new RuntimeException("Product not found");
+                }
+                ProductInfoDTO productInfo = new ProductInfoDTO();
+                productInfo.setProductId(product.getProductId())
+                        .setTitle(product.getTitle())
+                        .setPrice(product.getPrice())
+                        .setOriginalPrice(product.getOriginalPrice())
+                        .setCondition(product.getCondition())
+                        .setStatus(product.getStatus())
+                        .setPostDate(product.getPostDate())
+                        .setViewCount(product.getViewCount())
+                        .setFavoriteCount(product.getFavoriteCount());
+                productInfo.setSellerId(product.getSellerId())
+                        .setDescription(product.getDescription())
+                        .setStock(product.getStock())
+                        .setCategoryId(product.getCategoryId());
+
+                UserDTO seller = userClient.getUser(Long.valueOf(product.getSellerId()));
+                productInfo.setSellerName(seller.getUsername())
+                        .setSellerAvatarUrl(seller.getAvatarUrl());
+
+                Categories category = categoriesService.getCategoryById(product.getCategoryId());
+                productInfo.setCategoryName(category.getName())
+                        .setCategoryIconUrl(category.getIconUrl());
+
+                List<ProductImages> productImages = productImagesService.getProductImages(product.getProductId());
+                if (productImages != null && !productImages.isEmpty()) {
+                    List<String> imageUrls = productImages.stream().map(ProductImages::getImageUrl).collect(Collectors.toList());
+                    productInfo.setImageUrls(imageUrls);
+                    productImages.stream()
+                            .filter(ProductImages::getPrimaryImage)
+                            .findFirst()
+                            .ifPresent(primaryImage -> productInfo.setPrimaryImageUrl(primaryImage.getImageUrl()));
+                }
+
+                stringRedisTemplate.opsForValue().set(
+                        RedisConstants.PRODUCT_INFO_KEY + product.getProductId(),
+                        JSON.toJSONString(productInfo),
+                        RedisConstants.PRODUCT_INFO_TTL + random.nextInt(10),
+                        TimeUnit.MINUTES
+                );
+
+                if (user != null) {
+                    productInfo.setIfFavorite(favoritesService.ifFavorite(user.getUserId(), product.getProductId()));
+                }
+
+                return productInfo;
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Failed to get product info");
+        } finally {
+            if (locked) {
+                stringRedisTemplate.delete(RedisConstants.PRODUCT_INFO_LOCK_KEY + id);
+            }
         }
-        ProductInfoDTO productInfo = new ProductInfoDTO();
-        productInfo.setProductId(product.getProductId())
-                .setTitle(product.getTitle())
-                .setPrice(product.getPrice())
-                .setOriginalPrice(product.getOriginalPrice())
-                .setCondition(product.getCondition())
-                .setStatus(product.getStatus())
-                .setPostDate(product.getPostDate())
-                .setViewCount(product.getViewCount())
-                .setFavoriteCount(product.getFavoriteCount());
-        productInfo.setSellerId(product.getSellerId())
-                .setDescription(product.getDescription())
-                .setStock(product.getStock())
-                .setCategoryId(product.getCategoryId());
-
-        UserDTO seller = userClient.getUser(Long.valueOf(product.getSellerId()));
-        productInfo.setSellerName(seller.getUsername())
-                .setSellerAvatarUrl(seller.getAvatarUrl());
-
-        Categories category = categoriesService.getCategoryById(product.getCategoryId());
-        productInfo.setCategoryName(category.getName())
-                .setCategoryIconUrl(category.getIconUrl());
-
-        List<ProductImages> productImages = productImagesService.getProductImages(product.getProductId());
-        if (productImages != null && !productImages.isEmpty()) {
-            List<String> imageUrls = productImages.stream().map(ProductImages::getImageUrl).collect(Collectors.toList());
-            productInfo.setImageUrls(imageUrls);
-            productImages.stream()
-                    .filter(ProductImages::getPrimaryImage)
-                    .findFirst()
-                    .ifPresent(primaryImage -> productInfo.setPrimaryImageUrl(primaryImage.getImageUrl()));
-        }
-
-        stringRedisTemplate.opsForValue().set(
-                RedisConstants.PRODUCT_INFO_KEY + product.getProductId(),
-                JSON.toJSONString(productInfo)
-        );
-
-        if (user != null) {
-            productInfo.setIfFavorite(favoritesService.ifFavorite(user.getUserId(), product.getProductId()));
-        }
-
-        return productInfo;
     }
 }
