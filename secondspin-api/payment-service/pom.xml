@@ -87,6 +87,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
         </dependency>
+        <!--Alipay-->
+        <dependency>
+            <groupId>com.alipay.sdk</groupId>
+            <artifactId>alipay-sdk-java</artifactId>
+            <version>4.40.231.ALL</version>
+        </dependency>
     </dependencies>
 
     <build>

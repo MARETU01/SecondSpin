@@ -15,5 +15,5 @@ public class QueryDTO {
     private String sortBy;
 
     // 是否升序
-    private String isAsc;
+    private Boolean isAsc;
 }

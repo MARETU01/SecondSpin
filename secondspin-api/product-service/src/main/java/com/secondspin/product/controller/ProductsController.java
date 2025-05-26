@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/products")
 public class ProductsController {
 
-    final IProductsService productsService;
+    private final IProductsService productsService;
     private final ObjectMapper jacksonObjectMapper;
 
 

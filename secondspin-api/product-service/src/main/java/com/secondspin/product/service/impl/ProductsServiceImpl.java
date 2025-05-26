@@ -7,6 +7,8 @@ import com.secondspin.common.dto.JwtUser;
 import com.secondspin.common.utils.ImagesUtils;
 import com.secondspin.common.utils.RedisConstants;
 import com.secondspin.product.dto.ProductInfoDTO;
+import com.secondspin.product.dto.ProductListDTO;
+import com.secondspin.product.enums.ProductStatus;
 import com.secondspin.product.pojo.Categories;
 import com.secondspin.product.pojo.ProductImages;
 import com.secondspin.product.pojo.Products;
@@ -96,6 +98,11 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
             ProductInfoDTO productInfo = JSON.parseObject(productJson, ProductInfoDTO.class);
             if (user != null) {
                 productInfo.setIfFavorite(favoritesService.ifFavorite(user.getUserId(), id));
+            } else {
+                lambdaUpdate()
+                        .set(Products::getViewCount, productInfo.getViewCount() + 1)
+                        .eq(Products::getProductId, id)
+                        .update();
             }
             return productInfo;
         }
@@ -164,6 +171,11 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
 
                 if (user != null) {
                     productInfo.setIfFavorite(favoritesService.ifFavorite(user.getUserId(), product.getProductId()));
+                } else {
+                    lambdaUpdate()
+                            .set(Products::getViewCount, product.getViewCount() + 1)
+                            .eq(Products::getProductId, product.getProductId())
+                            .update();
                 }
 
                 return productInfo;
@@ -176,5 +188,35 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
                 stringRedisTemplate.delete(RedisConstants.PRODUCT_INFO_LOCK_KEY + id);
             }
         }
+    }
+
+    @Override
+    public List<ProductListDTO> getProductsByIdList(List<Integer> Ids) {
+        return lambdaQuery()
+                .in(Products::getProductId, Ids)
+                .eq(Products::getStatus, ProductStatus.AVAILABLE)
+                .list()
+                .stream()
+                .map(product -> {
+                    ProductListDTO dto = new ProductListDTO();
+                    dto.setProductId(product.getProductId())
+                            .setTitle(product.getTitle())
+                            .setPrice(product.getPrice())
+                            .setOriginalPrice(product.getOriginalPrice())
+                            .setCondition(product.getCondition())
+                            .setStatus(product.getStatus())
+                            .setPostDate(product.getPostDate())
+                            .setViewCount(product.getViewCount())
+                            .setFavoriteCount(product.getFavoriteCount());
+
+                    productImagesService.getProductImages(product.getProductId())
+                            .stream()
+                            .filter(ProductImages::getPrimaryImage)
+                            .findFirst()
+                            .ifPresent(image -> dto.setPrimaryImageUrl(image.getImageUrl()));
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }

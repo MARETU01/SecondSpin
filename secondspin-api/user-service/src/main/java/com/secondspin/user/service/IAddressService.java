@@ -16,8 +16,6 @@ import java.util.List;
  */
 public interface IAddressService extends IService<Address> {
 
-    List<Address> getAddressByUserId(Integer userId);
-
     Boolean saveAddress(Users user, Address address);
 
     Boolean updateAddress(Users user, Address address);

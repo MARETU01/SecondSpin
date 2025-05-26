@@ -26,7 +26,7 @@ public class AddressController {
     public Result<List<Address>> getAddress(@RequestHeader("user-info") String userJson) throws JsonProcessingException {
         Users user = jacksonObjectMapper.readValue(userJson, Users.class);
         try {
-            return Result.success(addressService.getAddressByUserId(user.getUserId()));
+            return Result.success(addressService.lambdaQuery().eq(Address::getUserId, user.getUserId()).list());
         } catch (Exception e) {
             return Result.failure(e.getMessage());
         }

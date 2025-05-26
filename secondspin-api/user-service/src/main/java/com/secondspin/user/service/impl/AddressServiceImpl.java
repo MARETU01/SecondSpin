@@ -22,11 +22,6 @@ import java.util.Optional;
 @Service
 public class AddressServiceImpl extends ServiceImpl<AddressMapper, Address> implements IAddressService {
 
-    @Override
-    public List<Address> getAddressByUserId(Integer userId) {
-        return lambdaQuery().eq(Address::getUserId, userId).list();
-    }
-
     @Transactional
     @Override
     public Boolean saveAddress(Users user, Address address) {
