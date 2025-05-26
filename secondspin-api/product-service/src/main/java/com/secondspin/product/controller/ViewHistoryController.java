@@ -6,7 +6,6 @@ import com.secondspin.common.dto.JwtUser;
 import com.secondspin.common.dto.PageDTO;
 import com.secondspin.common.dto.QueryDTO;
 import com.secondspin.common.utils.Result;
-import com.secondspin.product.dto.ProductListDTO;
 import com.secondspin.product.dto.ViewHistoryDTO;
 import com.secondspin.product.pojo.ViewHistory;
 import com.secondspin.product.service.IViewHistoryService;
@@ -52,7 +51,11 @@ public class ViewHistoryController {
                                               @RequestParam("ids") List<Integer> ids) throws JsonProcessingException {
         JwtUser user = jacksonObjectMapper.readValue(userJson, JwtUser.class);
         try {
-            return Result.success(viewHistoryService.removeBatchByIds(ids));
+            return Result.success(viewHistoryService.lambdaUpdate()
+                    .eq(ViewHistory::getUserId, user.getUserId())
+                    .in(ViewHistory::getHistoryId, ids)
+                    .remove()
+            );
         } catch (Exception e) {
             return Result.failure(e.getMessage());
         }

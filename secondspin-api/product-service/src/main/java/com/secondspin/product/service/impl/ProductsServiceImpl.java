@@ -98,6 +98,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
             ProductInfoDTO productInfo = JSON.parseObject(productJson, ProductInfoDTO.class);
             if (user != null) {
                 productInfo.setIfFavorite(favoritesService.ifFavorite(user.getUserId(), id));
+                // TODO: Update view count in the database
             } else {
                 lambdaUpdate()
                         .set(Products::getViewCount, productInfo.getViewCount() + 1)
@@ -171,6 +172,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
 
                 if (user != null) {
                     productInfo.setIfFavorite(favoritesService.ifFavorite(user.getUserId(), product.getProductId()));
+                    // TODO: Update view count in the database
                 } else {
                     lambdaUpdate()
                             .set(Products::getViewCount, product.getViewCount() + 1)
