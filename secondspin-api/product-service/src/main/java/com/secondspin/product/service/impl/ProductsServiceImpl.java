@@ -100,6 +100,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
                 productInfo.setIfFavorite(favoritesService.ifFavorite(user.getUserId(), id));
                 // TODO: Update view count in the database
             } else {
+                // TODO Ensure that the view count is same in Redis and MYSQL
                 lambdaUpdate()
                         .set(Products::getViewCount, productInfo.getViewCount() + 1)
                         .eq(Products::getProductId, id)

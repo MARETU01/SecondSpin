@@ -62,7 +62,6 @@ public class ViewHistoryServiceImpl extends ServiceImpl<ViewHistoryMapper, ViewH
             queryDTO = new QueryDTO();
             queryDTO.setPageNo(1L);
             queryDTO.setPageSize(10L);
-            queryDTO.setSortBy("viewTime");
             queryDTO.setIsAsc(false);
         }
 

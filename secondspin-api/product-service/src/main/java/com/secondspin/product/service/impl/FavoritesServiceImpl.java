@@ -12,6 +12,7 @@ import com.secondspin.product.mapper.FavoritesMapper;
 import com.secondspin.product.service.IFavoritesService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.secondspin.product.service.IProductsService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,7 +33,7 @@ public class FavoritesServiceImpl extends ServiceImpl<FavoritesMapper, Favorites
 
     private final IProductsService productsService;
 
-    public FavoritesServiceImpl(IProductsService productsService) {
+    public FavoritesServiceImpl(@Lazy IProductsService productsService) {
         this.productsService = productsService;
     }
 
@@ -51,7 +52,6 @@ public class FavoritesServiceImpl extends ServiceImpl<FavoritesMapper, Favorites
             queryDTO = new QueryDTO();
             queryDTO.setPageNo(1L);
             queryDTO.setPageSize(10L);
-            queryDTO.setSortBy("addDate");
             queryDTO.setIsAsc(false);
         }
 

@@ -1,5 +1,8 @@
 package com.secondspin.order.service;
 
+import com.secondspin.common.dto.PageDTO;
+import com.secondspin.common.dto.QueryDTO;
+import com.secondspin.order.dto.OrderListDTO;
 import com.secondspin.order.pojo.Orders;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +16,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IOrdersService extends IService<Orders> {
 
+    PageDTO<OrderListDTO> getOrders(Integer userId, QueryDTO queryDTO) ;
 }

@@ -11,9 +11,9 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class ProductInfoDTO extends ProductListDTO {
 
+    // Seller information
     private Integer sellerId;
 
-    // Seller information
     private String sellerName;
 
     private String sellerAvatarUrl;
@@ -23,9 +23,9 @@ public class ProductInfoDTO extends ProductListDTO {
     // Product images
     private List<String> imageUrls;
 
+    // Category information
     private Integer categoryId;
 
-    // Category information
     private String categoryName;
 
     private String categoryIconUrl;

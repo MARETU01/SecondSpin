@@ -16,4 +16,7 @@ public class QueryDTO {
 
     // 是否升序
     private Boolean isAsc;
+
+    // 筛选
+    private String filter;
 }

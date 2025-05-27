@@ -2,6 +2,7 @@ package com.secondspin.product.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.secondspin.api.dto.ProductViewDTO;
 import com.secondspin.common.dto.JwtUser;
 import com.secondspin.common.utils.Result;
 import com.secondspin.product.dto.ProductInfoDTO;
@@ -9,6 +10,8 @@ import com.secondspin.product.pojo.Products;
 import com.secondspin.product.service.IProductsService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -48,5 +51,16 @@ public class ProductsController {
         } catch (Exception e) {
             return Result.failure(e.getMessage());
         }
+    }
+
+    @GetMapping("/info")
+    public List<ProductViewDTO> getProductView(@RequestParam("ids") List<Integer> productIds) {
+        return productsService.getProductsByIdList(productIds)
+                .stream()
+                .map(product -> new ProductViewDTO()
+                        .setProductId(product.getProductId())
+                        .setTitle(product.getTitle())
+                        .setPrimaryImageUrl(product.getPrimaryImageUrl()))
+                .toList();
     }
 }
