@@ -15,7 +15,13 @@ public interface IUsersService extends IService<Users> {
 
     String login(Users user);
 
-    void sendCode(Users user);
+    Boolean sendCode(Users user);
 
-    void register(Users user, String verification);
+    Integer register(Users user, String verification);
+
+    Boolean sendForgetPasswordCode(Users user);
+
+    Boolean sendResetPasswordCode(Users user);
+
+    Boolean resetPassword(Users user, String verification);
 }

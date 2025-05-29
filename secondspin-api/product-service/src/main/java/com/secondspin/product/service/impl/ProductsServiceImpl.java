@@ -102,7 +102,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
             } else {
                 // TODO Ensure that the view count is same in Redis and MYSQL
                 lambdaUpdate()
-                        .set(Products::getViewCount, productInfo.getViewCount() + 1)
+                        .setIncrBy(Products::getViewCount, 1)
                         .eq(Products::getProductId, id)
                         .update();
             }
@@ -176,7 +176,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
                     // TODO: Update view count in the database
                 } else {
                     lambdaUpdate()
-                            .set(Products::getViewCount, product.getViewCount() + 1)
+                            .setIncrBy(Products::getViewCount, 1)
                             .eq(Products::getProductId, product.getProductId())
                             .update();
                 }

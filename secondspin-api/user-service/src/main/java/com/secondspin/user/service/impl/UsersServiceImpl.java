@@ -54,7 +54,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     }
 
     @Override
-    public void sendCode(Users user) {
+    public Boolean sendCode(Users user) {
         int verificationCode = ThreadLocalRandom.current().nextInt(100000, 1000000);
         stringRedisTemplate.opsForValue().set(
                 RedisConstants.VERIFY_CODE_KEY + user.getEmail(),
@@ -63,19 +63,68 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
                 TimeUnit.MINUTES
         );
         mailUtil.sendVerificationCodeMail(user.getEmail(), String.valueOf(verificationCode));
+        return true;
     }
 
     @Override
-    public void register(Users user, String verification) {
-        String storedCodde = stringRedisTemplate.opsForValue().get(
+    public Integer register(Users user, String verification) {
+        String storedCode = stringRedisTemplate.opsForValue().get(
                 RedisConstants.VERIFY_CODE_KEY + user.getEmail()
         );
-        if (!Objects.equals(storedCodde, verification)) {
+        if (!Objects.equals(storedCode, verification)) {
             throw new RuntimeException("verification code not correct");
         }
         String encodedPassword = HashUtil.encodePassword(user.getPassword());
         user.setPassword(encodedPassword);
         save(user);
         stringRedisTemplate.delete(RedisConstants.VERIFY_CODE_KEY + user.getEmail());
+        return user.getUserId();
+    }
+
+    @Override
+    public Boolean sendForgetPasswordCode(Users user) {
+        int verificationCode = ThreadLocalRandom.current().nextInt(100000, 1000000);
+        stringRedisTemplate.opsForValue().set(
+                RedisConstants.RESET_PASSWORD_KEY + user.getEmail(),
+                String.valueOf(verificationCode),
+                RedisConstants.VERIFY_CODE_TTL,
+                TimeUnit.MINUTES
+        );
+        mailUtil.sendVerificationCodeMail(user.getEmail(), String.valueOf(verificationCode));
+        return true;
+    }
+
+    @Override
+    public Boolean sendResetPasswordCode(Users user) {
+        Users realUser = getById(user.getUserId());
+        if (HashUtil.checkPassword(user.getPassword(), realUser.getPassword())) {
+            int verificationCode = ThreadLocalRandom.current().nextInt(100000, 1000000);
+            stringRedisTemplate.opsForValue().set(
+                    RedisConstants.RESET_PASSWORD_KEY + user.getEmail(),
+                    String.valueOf(verificationCode),
+                    RedisConstants.VERIFY_CODE_TTL,
+                    TimeUnit.MINUTES
+            );
+            mailUtil.sendVerificationCodeMail(user.getEmail(), String.valueOf(verificationCode));
+            return true;
+        }
+        throw new RuntimeException("password not correct");
+    }
+
+    @Override
+    public Boolean resetPassword(Users user, String verification) {
+        String storedCode = stringRedisTemplate.opsForValue().get(
+                RedisConstants.RESET_PASSWORD_KEY + user.getEmail()
+        );
+        if (!Objects.equals(storedCode, verification)) {
+            throw new RuntimeException("verification code not correct");
+        }
+        String encodedPassword = HashUtil.encodePassword(user.getPassword());
+        lambdaUpdate()
+                .eq(Users::getEmail, user.getEmail())
+                .set(Users::getPassword, encodedPassword)
+                .update();
+        stringRedisTemplate.delete(RedisConstants.RESET_PASSWORD_KEY + user.getEmail());
+        return true;
     }
 }
