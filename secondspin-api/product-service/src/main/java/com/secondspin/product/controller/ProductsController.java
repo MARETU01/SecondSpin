@@ -4,8 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.secondspin.api.dto.ProductViewDTO;
 import com.secondspin.common.dto.JwtUser;
+import com.secondspin.common.dto.PageDTO;
+import com.secondspin.common.dto.QueryDTO;
 import com.secondspin.common.utils.Result;
 import com.secondspin.product.dto.ProductInfoDTO;
+import com.secondspin.product.dto.ProductListDTO;
 import com.secondspin.product.pojo.Products;
 import com.secondspin.product.service.IProductsService;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +38,15 @@ public class ProductsController {
         Products product = jacksonObjectMapper.readValue(productJson, Products.class).setSellerId(user.getUserId());
         try {
             return Result.success(productsService.addProduct(product, files, primaryOrder));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    @GetMapping("/home")
+    public Result<PageDTO<ProductListDTO>> getHomeProducts(QueryDTO queryDTO) {
+        try {
+            return Result.success(productsService.getHomeProducts(queryDTO));
         } catch (Exception e) {
             return Result.failure(e.getMessage());
         }

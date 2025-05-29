@@ -1,9 +1,13 @@
 package com.secondspin.product.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.secondspin.api.client.UserClient;
 import com.secondspin.api.dto.UserDTO;
 import com.secondspin.common.dto.JwtUser;
+import com.secondspin.common.dto.PageDTO;
+import com.secondspin.common.dto.QueryDTO;
 import com.secondspin.common.utils.ImagesUtils;
 import com.secondspin.common.utils.RedisConstants;
 import com.secondspin.product.dto.ProductInfoDTO;
@@ -13,6 +17,7 @@ import com.secondspin.product.pojo.Categories;
 import com.secondspin.product.pojo.ProductImages;
 import com.secondspin.product.pojo.Products;
 import com.secondspin.product.mapper.ProductsMapper;
+import com.secondspin.product.pojo.ViewHistory;
 import com.secondspin.product.service.ICategoriesService;
 import com.secondspin.product.service.IFavoritesService;
 import com.secondspin.product.service.IProductImagesService;
@@ -86,6 +91,72 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
             }
         }
         return product.getProductId();
+    }
+
+    @Override
+    public PageDTO<ProductListDTO> getHomeProducts(QueryDTO queryDTO) {
+        // 默认查询条件
+        if (queryDTO == null) {
+            queryDTO = new QueryDTO();
+            queryDTO.setPageNo(1L);
+            queryDTO.setPageSize(30L);
+            queryDTO.setIsAsc(false);
+        }
+
+        final int CACHE_PAGE_LIMIT = 5;
+
+        if (queryDTO.getPageNo() <= CACHE_PAGE_LIMIT) {
+            String cachedResult = stringRedisTemplate.opsForValue().get(RedisConstants.PRODUCTS_HOME_KEY + queryDTO.getPageNo());
+            if (cachedResult != null) {
+                if (RedisConstants.NULL_VALUE.equals(cachedResult)) {
+                    throw new RuntimeException("No products found");
+                }
+            }
+            return JSON.parseObject(cachedResult, PageDTO.class);
+        }
+
+        Page<Products> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
+
+        LambdaQueryChainWrapper<Products> queryWrapper = lambdaQuery().eq(Products::getStatus, ProductStatus.AVAILABLE);
+
+        switch (queryDTO.getSortBy()) {
+            case "price":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getPrice);
+                break;
+            case "viewCount":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getViewCount);
+                break;
+            case "favoriteCount":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getFavoriteCount);
+                break;
+            case "postDate":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getPostDate);
+                break;
+            default:
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getPostDate);
+                break;
+        }
+
+        Page<Products> data = queryWrapper.page(page);
+
+        List<ProductListDTO> result = getProductsByIdList(data.getRecords().stream()
+                .map(Products::getProductId)
+                .collect(Collectors.toList()));
+
+        PageDTO<ProductListDTO> pageDTO = new PageDTO<>();
+        pageDTO.setData(result);
+        pageDTO.setTotal(data.getTotal());
+        pageDTO.setTotalPage(data.getPages());
+
+        if (queryDTO.getPageNo() <= CACHE_PAGE_LIMIT) {
+            stringRedisTemplate.opsForValue().set(
+                    RedisConstants.PRODUCTS_HOME_KEY + queryDTO.getPageNo(),
+                    JSON.toJSONString(pageDTO),
+                    RedisConstants.PRODUCTS_HOME_TTL + random.nextInt(10),
+                    TimeUnit.MINUTES
+            );
+        }
+        return pageDTO;
     }
 
     @Override
@@ -197,7 +268,6 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
     public List<ProductListDTO> getProductsByIdList(List<Integer> Ids) {
         return lambdaQuery()
                 .in(Products::getProductId, Ids)
-                .eq(Products::getStatus, ProductStatus.AVAILABLE)
                 .list()
                 .stream()
                 .map(product -> {

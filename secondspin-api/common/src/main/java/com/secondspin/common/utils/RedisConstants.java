@@ -20,6 +20,8 @@ public class RedisConstants {
 
     //  Product-service
     public static final String CATEGORIES_KEY = APP_NAME + PRODUCT_SERVICE_PREFIX + "categories:all";
+    public static final String PRODUCTS_HOME_KEY = APP_NAME + PRODUCT_SERVICE_PREFIX + "home:";
+    public static final Long PRODUCTS_HOME_TTL = 10L;
     public static final String PRODUCT_INFO_KEY = APP_NAME + PRODUCT_SERVICE_PREFIX + "product:";
     public static final Long PRODUCT_INFO_TTL = 60L;
     public static final String PRODUCT_INFO_LOCK_KEY = PRODUCT_INFO_KEY + LOCK_KEY;
