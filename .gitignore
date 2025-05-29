@@ -53,5 +53,3 @@ target/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-[safe]
-    directory = C:/Users/86136/Desktop/second-pin/SecondSpin
