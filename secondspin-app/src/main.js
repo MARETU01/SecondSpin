@@ -3,7 +3,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import http from './http'
-
+// 导入Font Awesome
+import 'font-awesome/css/font-awesome.min.css';
 const app = createApp(App)
 
 app.config.globalProperties.$http = http
