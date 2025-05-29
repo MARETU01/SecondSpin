@@ -2,8 +2,8 @@
   <header class="app-header">
     <div class="container">
       <div class="logo" @click="$router.push('/')">
-        <h1>二手易</h1>
-        <span>SecondHandEasy</span>
+        <h1>转转</h1>
+        <span>turnturn</span>
       </div>
       
       <div class="user-actions">
