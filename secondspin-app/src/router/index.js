@@ -17,23 +17,15 @@ const routes = [
     component: ResetPasswordView
   },
   {
-    path: '/Login',
+    path: '/login',
     name: 'Login',
     component: LoginView
   },
   {
-    path: '/Register',
+    path: '/register',
     name: 'Register',
     component: RegisterView
   },
-  {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
 ]
 
 const router = createRouter({
