@@ -10,9 +10,14 @@
         <button class="btn publish-btn" @click="$router.push('/publish')">
           <i class="icon">+</i> 发布商品
         </button>
-        <button class="btn login-btn" @click="$router.push('/login')">
-          登录/注册
-        </button>
+        <div class="auth-section">
+          <button class="btn login-btn" @click="$router.push('/login')">
+            登录/注册
+          </button>
+          <div class="user-avatar" @click="$router.push('/profile')">
+            <img :src="userAvatar" alt="用户头像" />
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -20,7 +25,28 @@
 
 <script>
 export default {
-  name: 'AppHeader'
+  name: 'AppHeader',
+  data() {
+    return {
+      isLoggedIn: false,
+      userAvatar: '/default-avatar.png'
+    }
+  },
+  created() {
+    this.checkLoginStatus()
+  },
+  methods: {
+    checkLoginStatus() {
+      const token = localStorage.getItem('token')
+      this.isLoggedIn = !!token
+      if (this.isLoggedIn) {
+        this.getUserInfo()
+      }
+    },
+    getUserInfo() {
+      // 这里添加获取用户信息的逻辑
+    }
+  }
 }
 </script>
 
@@ -61,6 +87,13 @@ export default {
 .user-actions {
   display: flex;
   gap: 15px;
+  align-items: center;
+}
+
+.auth-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .btn {
@@ -93,5 +126,25 @@ export default {
 
 .icon {
   margin-right: 5px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid white;
+  transition: transform 0.3s;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
