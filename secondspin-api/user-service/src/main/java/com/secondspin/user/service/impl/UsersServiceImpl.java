@@ -74,6 +74,11 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         if (!Objects.equals(storedCode, verification)) {
             throw new RuntimeException("verification code not correct");
         }
+        if (lambdaQuery().eq(Users::getEmail, user.getEmail()).one() != null) {
+            throw new RuntimeException("email already registered");
+        } else if (lambdaQuery().eq(Users::getUsername, user.getUsername()).one() != null) {
+            throw new RuntimeException("username already registered");
+        }
         String encodedPassword = HashUtil.encodePassword(user.getPassword());
         user.setPassword(encodedPassword);
         save(user);
