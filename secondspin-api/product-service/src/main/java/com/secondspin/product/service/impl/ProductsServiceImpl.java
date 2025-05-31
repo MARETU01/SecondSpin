@@ -98,10 +98,12 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
         // 默认查询条件
         if (queryDTO == null) {
             queryDTO = new QueryDTO();
-            queryDTO.setPageNo(1L);
-            queryDTO.setPageSize(30L);
-            queryDTO.setIsAsc(false);
         }
+
+        queryDTO.setPageNo(queryDTO.getPageNo() != null ? queryDTO.getPageNo() : 1L);
+        queryDTO.setPageSize(queryDTO.getPageSize() != null ? queryDTO.getPageSize() : 30L);
+        queryDTO.setIsAsc(queryDTO.getIsAsc() != null ? queryDTO.getIsAsc() : false);
+        queryDTO.setSortBy(queryDTO.getSortBy() != null ? queryDTO.getSortBy() : "postDate");
 
         final int CACHE_PAGE_LIMIT = 5;
 
@@ -116,6 +118,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
         }
 
         Page<Products> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
+        page.setOptimizeCountSql(true);
 
         LambdaQueryChainWrapper<Products> queryWrapper = lambdaQuery().eq(Products::getStatus, ProductStatus.AVAILABLE);
 
@@ -266,7 +269,50 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
 
     @Override
     public PageDTO<ProductListDTO> getPostProducts(Integer sellerId, QueryDTO queryDTO) {
-        return null;
+        // 默认查询条件
+        if (queryDTO == null) {
+            queryDTO = new QueryDTO();
+        }
+
+        queryDTO.setPageNo(queryDTO.getPageNo() != null ? queryDTO.getPageNo() : 1L);
+        queryDTO.setPageSize(queryDTO.getPageSize() != null ? queryDTO.getPageSize() : 30L);
+        queryDTO.setIsAsc(queryDTO.getIsAsc() != null ? queryDTO.getIsAsc() : false);
+        queryDTO.setSortBy(queryDTO.getSortBy() != null ? queryDTO.getSortBy() : "postDate");
+
+        Page<Products> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
+        page.setOptimizeCountSql(true);
+
+        LambdaQueryChainWrapper<Products> queryWrapper = lambdaQuery().eq(Products::getSellerId, sellerId);
+
+        switch (queryDTO.getSortBy()) {
+            case "price":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getPrice);
+                break;
+            case "viewCount":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getViewCount);
+                break;
+            case "favoriteCount":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getFavoriteCount);
+                break;
+            case "postDate":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getPostDate);
+                break;
+            default:
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getPostDate);
+                break;
+        }
+
+        Page<Products> data = queryWrapper.page(page);
+
+        List<ProductListDTO> result = getProductsByIdList(data.getRecords().stream()
+                .map(Products::getProductId)
+                .collect(Collectors.toList()));
+
+        PageDTO<ProductListDTO> pageDTO = new PageDTO<>();
+        pageDTO.setData(result);
+        pageDTO.setTotal(data.getTotal());
+        pageDTO.setTotalPage(data.getPages());
+        return pageDTO;
     }
 
     @Override

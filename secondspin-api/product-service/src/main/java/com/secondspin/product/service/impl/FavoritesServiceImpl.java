@@ -50,12 +50,15 @@ public class FavoritesServiceImpl extends ServiceImpl<FavoritesMapper, Favorites
         // 默认查询条件
         if (queryDTO == null) {
             queryDTO = new QueryDTO();
-            queryDTO.setPageNo(1L);
-            queryDTO.setPageSize(10L);
-            queryDTO.setIsAsc(false);
         }
 
+        queryDTO.setPageNo(queryDTO.getPageNo() != null ? queryDTO.getPageNo() : 1L);
+        queryDTO.setPageSize(queryDTO.getPageSize() != null ? queryDTO.getPageSize() : 10L);
+        queryDTO.setIsAsc(queryDTO.getIsAsc() != null ? queryDTO.getIsAsc() : false);
+        queryDTO.setSortBy(queryDTO.getSortBy() != null ? queryDTO.getSortBy() : "addDate");
+
         Page<Favorites> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
+        page.setOptimizeCountSql(true);
 
         LambdaQueryChainWrapper<Favorites> queryWrapper = lambdaQuery()
                 .eq(Favorites::getUserId, userId);
