@@ -37,7 +37,7 @@
         <spring-boot-dependencies.version>3.4.4</spring-boot-dependencies.version>
         <org.projectlombok.version>1.18.34</org.projectlombok.version>
         <jwt.version>0.12.6</jwt.version>
-        <mybatis-plus.version>3.5.11</mybatis-plus.version>
+        <mybatis-plus.version>3.5.12</mybatis-plus.version>
         <mysql.version>8.0.28</mysql.version>
     </properties>
 
@@ -95,8 +95,10 @@
             <!-- mybatis plus 管理 -->
             <dependency>
                 <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <artifactId>mybatis-plus-bom</artifactId>
                 <version>${mybatis-plus.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

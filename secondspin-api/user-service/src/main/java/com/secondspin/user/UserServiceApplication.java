@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.secondspin.user", "com.secondspin.common.config"})
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = "com.secondspin.api.client")
 @MapperScan("com.secondspin.user.mapper")

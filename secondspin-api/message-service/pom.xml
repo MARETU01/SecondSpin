@@ -20,6 +20,12 @@
     </properties>
 
     <dependencies>
+        <!--common-->
+        <dependency>
+            <groupId>com.secondspin</groupId>
+            <artifactId>common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <!--api-->
         <dependency>
             <groupId>com.secondspin</groupId>
@@ -65,11 +71,6 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-        </dependency>
-        <!--Mybatis Plus-->
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>
         <!--Redis-->
         <dependency>
