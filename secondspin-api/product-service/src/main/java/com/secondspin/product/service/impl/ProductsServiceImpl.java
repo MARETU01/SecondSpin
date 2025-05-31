@@ -217,7 +217,6 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
                         .setFavoriteCount(product.getFavoriteCount());
                 productInfo.setSellerId(product.getSellerId())
                         .setDescription(product.getDescription())
-                        .setStock(product.getStock())
                         .setCategoryId(product.getCategoryId());
 
                 UserDTO seller = userClient.getUser(Long.valueOf(product.getSellerId()));

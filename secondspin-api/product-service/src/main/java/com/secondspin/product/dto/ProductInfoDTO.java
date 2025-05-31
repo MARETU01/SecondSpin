@@ -30,8 +30,6 @@ public class ProductInfoDTO extends ProductListDTO {
 
     private String categoryIconUrl;
 
-    private Integer stock;
-
     // User favorite status
     private Boolean ifFavorite;
 }

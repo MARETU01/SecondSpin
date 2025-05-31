@@ -46,8 +46,6 @@ public class Products implements Serializable {
 
     private BigDecimal originalPrice;
 
-    private Integer stock;
-
     @TableField("`condition`")
     private Condition condition;
 
