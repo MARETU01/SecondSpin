@@ -2,6 +2,7 @@ package com.secondspin.user.service;
 
 import com.secondspin.user.pojo.Users;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
@@ -26,4 +27,8 @@ public interface IUsersService extends IService<Users> {
     Boolean resetPassword(Users user, String verification);
 
     Users getUserInfo(Users user, Long id);
+
+    Boolean updateUserInfo(Integer userId, Users userInfo);
+
+    Boolean updateAvatar(Integer userId, MultipartFile file);
 }

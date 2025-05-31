@@ -1,6 +1,7 @@
 package com.secondspin.user.service.impl;
 
 import com.secondspin.common.dto.JwtUser;
+import com.secondspin.common.utils.ImagesUtils;
 import com.secondspin.common.utils.JwtUtils;
 import com.secondspin.common.utils.RedisConstants;
 import com.secondspin.user.enums.AccountStatus;
@@ -12,7 +13,9 @@ import com.secondspin.user.utils.HashUtil;
 import com.secondspin.user.utils.MailUtil;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -146,5 +149,34 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
                 .setPassword(null)
                 .setRealName(null)
                 .setPhone(null);
+    }
+
+    @Override
+    public Boolean updateUserInfo(Integer userId, Users userInfo) {
+        if (userInfo.getUsername() != null && lambdaQuery().eq(Users::getUsername, userInfo.getUsername()).ne(Users::getUserId, userId).one() != null) {
+            throw new RuntimeException("username already exists");
+        } else if (userInfo.getEmail() != null && lambdaQuery().eq(Users::getEmail, userInfo.getEmail()).ne(Users::getUserId, userId).one() != null) {
+            throw new RuntimeException("email already exists");
+        }
+        return lambdaUpdate()
+                .eq(Users::getUserId, userId)
+                .set(userInfo.getUsername() != null, Users::getUsername, userInfo.getUsername())
+                .set(userInfo.getRealName() != null, Users::getRealName, userInfo.getRealName())
+                .set(userInfo.getEmail() != null, Users::getEmail, userInfo.getEmail())
+                .set(userInfo.getPhone() != null, Users::getPhone, userInfo.getPhone())
+                .update();
+    }
+
+    @Override
+    public Boolean updateAvatar(Integer userId, MultipartFile file) {
+        try {
+            String avatarName = ImagesUtils.saveAvatar(file);
+            return lambdaUpdate()
+                    .eq(Users::getUserId, userId)
+                    .set(Users::getAvatarUrl, avatarName)
+                    .update();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save avatar image: " + e.getMessage());
+        }
     }
 }

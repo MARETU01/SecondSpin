@@ -7,6 +7,7 @@ import com.secondspin.common.utils.Result;
 import com.secondspin.user.pojo.Users;
 import com.secondspin.user.service.IUsersService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/users")
@@ -89,6 +90,28 @@ public class UsersController {
         }
         try {
             return Result.success(usersService.getUserInfo(user, id));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    @PutMapping("/info")
+    public Result<Boolean> updateUserInfo(@RequestHeader(value = "user-info") String userJson,
+                                          @RequestBody Users userInfo) throws JsonProcessingException {
+        Users user = jacksonObjectMapper.readValue(userJson, Users.class);
+        try {
+            return Result.success(usersService.updateUserInfo(user.getUserId(), userInfo));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    @PutMapping("/avatar")
+    public Result<Boolean> updateAvatar(@RequestHeader(value = "user-info") String userJson,
+                                        @RequestParam("file") MultipartFile file) throws JsonProcessingException {
+        Users user = jacksonObjectMapper.readValue(userJson, Users.class);
+        try {
+            return Result.success(usersService.updateAvatar(user.getUserId(), file));
         } catch (Exception e) {
             return Result.failure(e.getMessage());
         }

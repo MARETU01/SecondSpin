@@ -17,7 +17,6 @@ import com.secondspin.product.pojo.Categories;
 import com.secondspin.product.pojo.ProductImages;
 import com.secondspin.product.pojo.Products;
 import com.secondspin.product.mapper.ProductsMapper;
-import com.secondspin.product.pojo.ViewHistory;
 import com.secondspin.product.service.ICategoriesService;
 import com.secondspin.product.service.IFavoritesService;
 import com.secondspin.product.service.IProductImagesService;
@@ -74,7 +73,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
         save(product);
         if (files != null && files.length > 0) {
             try {
-                List<String> imageNames = ImagesUtils.saveImages(files);
+                List<String> imageNames = ImagesUtils.saveProductImages(files);
                 primaryOrder = primaryOrder == null ? 1 : primaryOrder;
                 List<ProductImages> productImages = new ArrayList<>();
                 for (int i = 0; i < imageNames.size(); i++) {
@@ -87,7 +86,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
                 }
                 productImagesService.saveBatch(productImages);
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Failed to save product images: " + e.getMessage());
             }
         }
         return product.getProductId();
