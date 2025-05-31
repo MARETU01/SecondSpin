@@ -127,4 +127,19 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         stringRedisTemplate.delete(RedisConstants.RESET_PASSWORD_KEY + user.getEmail());
         return true;
     }
+
+    @Override
+    public Users getUserInfo(Users user, Long id) {
+        Users userInfo = getById(id);
+        if (userInfo == null) {
+            throw new RuntimeException("user not found");
+        }
+        if (user != null && user.getUserId().equals(id)) {
+            return userInfo;
+        }
+        return userInfo
+                .setPassword(null)
+                .setRealName(null)
+                .setPhone(null);
+    }
 }

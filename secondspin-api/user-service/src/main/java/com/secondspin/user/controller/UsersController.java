@@ -80,6 +80,20 @@ public class UsersController {
         }
     }
 
+    @GetMapping("/info/{id}")
+    public Result<Users> getUserInfo(@RequestHeader(value = "user-info", required = false) String userJson,
+                                     @PathVariable Long id) throws JsonProcessingException {
+        Users user = null;
+        if (userJson != null && !userJson.isEmpty()) {
+            user = jacksonObjectMapper.readValue(userJson, Users.class);
+        }
+        try {
+            return Result.success(usersService.getUserInfo(user, id));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
     @GetMapping("/{id}")
     public Users getUser(@PathVariable Long id) {
         return usersService.getById(id);

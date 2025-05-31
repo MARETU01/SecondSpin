@@ -27,5 +27,7 @@ public interface IProductsService extends IService<Products> {
 
     ProductInfoDTO getProductInfo(JwtUser user, Integer id);
 
+    PageDTO<ProductListDTO> getPostProducts(Integer sellerId, QueryDTO queryDTO);
+
     List<ProductListDTO> getProductsByIdList(List<Integer> Ids);
 }

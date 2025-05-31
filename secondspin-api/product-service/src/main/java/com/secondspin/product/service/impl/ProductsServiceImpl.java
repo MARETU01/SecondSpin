@@ -265,6 +265,11 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
     }
 
     @Override
+    public PageDTO<ProductListDTO> getPostProducts(Integer sellerId, QueryDTO queryDTO) {
+        return null;
+    }
+
+    @Override
     public List<ProductListDTO> getProductsByIdList(List<Integer> Ids) {
         return lambdaQuery()
                 .in(Products::getProductId, Ids)

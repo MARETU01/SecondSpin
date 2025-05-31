@@ -65,6 +65,16 @@ public class ProductsController {
         }
     }
 
+    @GetMapping("/post/{id}")
+    public Result<PageDTO<ProductListDTO>> getProductForPost(@PathVariable("id") Integer id,
+                                                             QueryDTO queryDTO) {
+        try {
+            return Result.success(productsService.getPostProducts(id, queryDTO));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
     @GetMapping("/info")
     public List<ProductViewDTO> getProductView(@RequestParam("ids") List<Integer> productIds) {
         return productsService.getProductsByIdList(productIds)
