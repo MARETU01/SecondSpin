@@ -275,12 +275,28 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
         queryDTO.setPageNo(queryDTO.getPageNo() != null ? queryDTO.getPageNo() : 1L);
         queryDTO.setPageSize(queryDTO.getPageSize() != null ? queryDTO.getPageSize() : 30L);
         queryDTO.setIsAsc(queryDTO.getIsAsc() != null ? queryDTO.getIsAsc() : false);
+        queryDTO.setFilter(queryDTO.getFilter() != null ? queryDTO.getFilter() : "");
         queryDTO.setSortBy(queryDTO.getSortBy() != null ? queryDTO.getSortBy() : "postDate");
 
         Page<Products> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
         page.setOptimizeCountSql(true);
 
         LambdaQueryChainWrapper<Products> queryWrapper = lambdaQuery().eq(Products::getSellerId, sellerId);
+
+        switch (queryDTO.getFilter()) {
+            case "available":
+                queryWrapper.eq(Products::getStatus, ProductStatus.AVAILABLE);
+                break;
+            case "reserved":
+                queryWrapper.eq(Products::getStatus, ProductStatus.RESERVED);
+                break;
+            case "sold":
+                queryWrapper.eq(Products::getStatus, ProductStatus.SOLD);
+                break;
+            default:
+                queryWrapper.ne(Products::getStatus, ProductStatus.SOLD);
+                break;
+        }
 
         switch (queryDTO.getSortBy()) {
             case "price":

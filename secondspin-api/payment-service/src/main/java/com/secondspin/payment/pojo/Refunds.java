@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
+import com.secondspin.payment.enums.RefundMethod;
 import com.secondspin.payment.enums.RefundReason;
 import com.secondspin.payment.enums.RefundStatus;
 import lombok.Data;
@@ -62,7 +63,7 @@ public class Refunds implements Serializable {
     /**
      * 原路退回或替代退款方式
      */
-    private String refundMethod;
+    private RefundMethod refundMethod;
 
     /**
      * 退款交易ID

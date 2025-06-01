@@ -41,12 +41,15 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         // 默认查询条件
         if (queryDTO == null) {
             queryDTO = new QueryDTO();
-            queryDTO.setPageNo(1L);
-            queryDTO.setPageSize(10L);
-            queryDTO.setIsAsc(false);
         }
+        queryDTO.setPageNo(queryDTO.getPageNo() != null ? queryDTO.getPageNo() : 1L);
+        queryDTO.setPageSize(queryDTO.getPageSize() != null ? queryDTO.getPageSize() : 10L);
+        queryDTO.setIsAsc(queryDTO.getIsAsc() != null ? queryDTO.getIsAsc() : false);
+        queryDTO.setFilter(queryDTO.getFilter() != null ? queryDTO.getFilter() : "all");
+        queryDTO.setSortBy(queryDTO.getSortBy() != null ? queryDTO.getSortBy() : "createTime");
 
         Page<Orders> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
+        page.setOptimizeCountSql(true);
 
         LambdaQueryChainWrapper<Orders> queryWrapper = lambdaQuery()
                 .eq(Orders::getBuyerId, userId);
