@@ -35,6 +35,8 @@ const handleAvatarUpload = (event) => {
     const reader = new FileReader()
     reader.onload = (e) => {
       userInfo.value.avatarUrl = e.target.result
+      // 保存更新后的用户信息到localStorage
+      localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
       showUploadDialog.value = false
     }
     reader.readAsDataURL(file)
@@ -65,6 +67,8 @@ const saveProfile = () => {
   userInfo.value.realName = tempUserInfo.value.realName
   userInfo.value.phone = tempUserInfo.value.phone
   isEditing.value = false
+  // 保存用户信息到localStorage
+  localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
   alert('保存成功！')
 }
 
@@ -102,6 +106,15 @@ const getTabIcon = (tabId) => {
 const goToHome = () => {
   router.push('/')
 }
+
+// 添加退出登录方法
+const handleLogout = () => {
+  // 清除本地存储的用户信息和token
+  localStorage.removeItem('token')
+  localStorage.removeItem('userInfo')
+  // 跳转到首页
+  router.push('/')
+}
 </script>
 
 <template>
@@ -135,6 +148,10 @@ const goToHome = () => {
               <span class="stat-label">浏览</span>
             </div>
           </div>
+          <!-- 添加退出登录按钮 -->
+          <button class="logout-btn" @click="handleLogout">
+            <i class="icon">🚪</i> 退出登录
+          </button>
         </div>
         
         <nav class="profile-nav">
@@ -905,5 +922,30 @@ const goToHome = () => {
 .form-group input:disabled {
   background-color: #f5f5f5;
   cursor: not-allowed;
+}
+
+.logout-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+
+.logout-btn:hover {
+  background-color: #d32f2f;
+}
+
+.logout-btn .icon {
+  font-size: 18px;
 }
 </style>

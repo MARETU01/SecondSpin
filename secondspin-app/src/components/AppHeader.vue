@@ -11,10 +11,10 @@
           <i class="icon">+</i> 发布商品
         </button>
         <div class="auth-section">
-          <button class="btn login-btn" @click="$router.push('/login')">
+          <button v-if="!isLoggedIn" class="btn login-btn" @click="$router.push('/login')">
             登录/注册
           </button>
-          <div class="user-avatar" @click="$router.push('/profile')">
+          <div v-else class="user-avatar" @click="$router.push('/profile')">
             <img :src="userAvatar" alt="用户头像" />
           </div>
         </div>
@@ -44,7 +44,11 @@ export default {
       }
     },
     getUserInfo() {
-      // 这里添加获取用户信息的逻辑
+      // 从localStorage获取用户信息
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      if (userInfo && userInfo.avatarUrl) {
+        this.userAvatar = userInfo.avatarUrl
+      }
     }
   }
 }
