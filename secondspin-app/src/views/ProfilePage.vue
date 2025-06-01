@@ -1,119 +1,121 @@
-<script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+<script>
 
-const router = useRouter()
-
-const userInfo = ref({
-  userId: 1,
-  username: '测试用户',
-  email: 'test@example.com',
-  registrationDate: '2024-03-20 10:00:00',
-  accountStatus: 'ACTIVE',
-  realName: '',
-  phone: ''
-})
-
-const isEditing = ref(false)
-const tempUserInfo = ref({})
-const showUploadDialog = ref(false)
-
-const activeTab = ref('profile')
-
-const tabs = [
-  { id: 'profile', name: '个人信息' },
-  { id: 'favorites', name: '我的收藏' },
-  { id: 'history', name: '浏览记录' },
-  { id: 'posts', name: '我的发布' },
-  { id: 'security', name: '修改密码' }
-]
-
-const handleAvatarUpload = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    // 这里应该调用后端API上传头像
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      userInfo.value.avatarUrl = e.target.result
-      // 保存更新后的用户信息到localStorage
-      localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
-      showUploadDialog.value = false
+export default {
+  data() {
+    return {
+      userInfo: {
+        userId: 1,
+        username: '测试用户',
+        email: 'test@example.com',
+        registrationDate: '2024-03-20 10:00:00',
+        accountStatus: 'ACTIVE',
+        realName: '',
+        phone: ''
+      },
+      isEditing: false,
+      tempUserInfo: {},
+      showUploadDialog: false,
+      activeTab: 'profile',
+      tabs: [
+        { id: 'profile', name: '个人信息' },
+        { id: 'favorites', name: '我的收藏' },
+        { id: 'history', name: '浏览记录' },
+        { id: 'posts', name: '我的发布' },
+        { id: 'security', name: '修改密码' }
+      ]
     }
-    reader.readAsDataURL(file)
+  },
+  methods: {
+    fetchUserInfo() {
+      this.$http.get(`/users/info/1`)
+        .then(response => {
+          console.log('获取用户信息响应:', response.data)
+          if (response.data.code === 1) {
+            // 更新用户信息
+            this.userInfo = {
+              ...this.userInfo,
+              ...response.data.data
+            }
+          } else {
+            alert(response.data.message || '获取用户信息失败')
+          }
+        })
+        .catch(error => {
+          console.error('获取用户信息错误:', error)
+          alert(error.response?.data?.message || '网络错误，请稍后重试')
+        })
+    },
+    handleAvatarUpload(event) {
+      const file = event.target.files[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          this.userInfo.avatarUrl = e.target.result
+          localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
+          this.showUploadDialog = false
+        }
+        reader.readAsDataURL(file)
+      }
+    },
+    openUploadDialog() {
+      this.showUploadDialog = true
+    },
+    closeUploadDialog() {
+      this.showUploadDialog = false
+    },
+    startEditing() {
+      this.tempUserInfo = {
+        realName: this.userInfo.realName,
+        phone: this.userInfo.phone
+      }
+      this.isEditing = true
+    },
+    cancelEditing() {
+      this.isEditing = false
+    },
+    saveProfile() {
+      this.userInfo.realName = this.tempUserInfo.realName
+      this.userInfo.phone = this.tempUserInfo.phone
+      this.isEditing = false
+      localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
+      alert('保存成功！')
+    },
+    changePassword() {
+      alert('密码修改成功！')
+    },
+    formatDate(dateString) {
+      if (!dateString) return ''
+      const date = new Date(dateString)
+      return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    },
+    getTabIcon(tabId) {
+      const icons = {
+        profile: '👤',
+        favorites: '❤️',
+        history: '📜',
+        posts: '📝',
+        security: '🔒'
+      }
+      return icons[tabId] || ''
+    },
+    goToHome() {
+      this.$router.push('/')
+    },
+    handleLogout() {
+      localStorage.removeItem('token')
+      localStorage.removeItem('userInfo')
+      this.$router.push('/')
+    }
+  },
+  mounted() {
+    this.fetchUserInfo()
   }
-}
-
-const openUploadDialog = () => {
-  showUploadDialog.value = true
-}
-
-const closeUploadDialog = () => {
-  showUploadDialog.value = false
-}
-
-const startEditing = () => {
-  tempUserInfo.value = {
-    realName: userInfo.value.realName,
-    phone: userInfo.value.phone
-  }
-  isEditing.value = true
-}
-
-const cancelEditing = () => {
-  isEditing.value = false
-}
-
-const saveProfile = () => {
-  userInfo.value.realName = tempUserInfo.value.realName
-  userInfo.value.phone = tempUserInfo.value.phone
-  isEditing.value = false
-  // 保存用户信息到localStorage
-  localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
-  alert('保存成功！')
-}
-
-const changePassword = () => {
-  // 这里应该调用后端API修改密码
-  alert('密码修改成功！')
-}
-
-// 格式化日期显示
-const formatDate = (dateString) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-// 添加获取标签图标的函数
-const getTabIcon = (tabId) => {
-  const icons = {
-    profile: '👤',
-    favorites: '❤️',
-    history: '📜',
-    posts: '📝',
-    security: '🔒'
-  }
-  return icons[tabId] || ''
-}
-
-// 添加跳转到首页的方法
-const goToHome = () => {
-  router.push('/')
-}
-
-// 添加退出登录方法
-const handleLogout = () => {
-  // 清除本地存储的用户信息和token
-  localStorage.removeItem('token')
-  localStorage.removeItem('userInfo')
-  // 跳转到首页
-  router.push('/')
 }
 </script>
 

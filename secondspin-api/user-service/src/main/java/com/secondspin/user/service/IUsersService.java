@@ -26,7 +26,7 @@ public interface IUsersService extends IService<Users> {
 
     Boolean resetPassword(Users user, String verification);
 
-    Users getUserInfo(Users user, Long id);
+    Users getUserInfo(Users user, Integer id);
 
     Boolean updateUserInfo(Integer userId, Users userInfo);
 

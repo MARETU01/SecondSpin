@@ -83,7 +83,7 @@ public class UsersController {
 
     @GetMapping("/info/{id}")
     public Result<Users> getUserInfo(@RequestHeader(value = "user-info", required = false) String userJson,
-                                     @PathVariable Long id) throws JsonProcessingException {
+                                     @PathVariable Integer id) throws JsonProcessingException {
         Users user = null;
         if (userJson != null && !userJson.isEmpty()) {
             user = jacksonObjectMapper.readValue(userJson, Users.class);

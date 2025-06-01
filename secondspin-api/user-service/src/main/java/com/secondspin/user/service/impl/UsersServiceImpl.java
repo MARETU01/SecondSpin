@@ -137,13 +137,13 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     }
 
     @Override
-    public Users getUserInfo(Users user, Long id) {
+    public Users getUserInfo(Users user, Integer id) {
         Users userInfo = getById(id);
         if (userInfo == null) {
             throw new RuntimeException("user not found");
         }
         if (user != null && user.getUserId().equals(id)) {
-            return userInfo;
+            return userInfo.setPassword(null);
         }
         return userInfo
                 .setPassword(null)
