@@ -22,7 +22,10 @@ export default {
         { id: 'history', name: '浏览记录' },
         { id: 'posts', name: '我的发布' },
         { id: 'security', name: '修改密码' }
-      ]
+      ],
+      favoriteProducts: [],
+      loading: false,
+      error: null
     }
   },
   methods: {
@@ -111,10 +114,65 @@ export default {
       localStorage.removeItem('token')
       localStorage.removeItem('userInfo')
       this.$router.push('/')
+    },
+    fetchFavoriteProducts() {
+      this.loading = true;
+      this.error = null;
+      
+      this.$http.get('/favorites')
+        .then(response => {
+          console.log('获取收藏商品响应:', response.data);
+          if (response.data.code === 1) {
+            this.favoriteProducts = response.data.data.data || [];
+            console.log('收藏商品列表:', this.favoriteProducts);
+          } else {
+            this.error = response.data.message || '获取收藏商品失败';
+          }
+        })
+        .catch(error => {
+          console.error('获取收藏商品错误:', error);
+          this.error = error.response?.data?.message || '网络错误，请稍后重试';
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    removeFavorite(productId) {
+      this.$http.delete('/favorites', {
+        params: {
+          ids: [productId]
+        }
+      })
+        .then(response => {
+          console.log('取消收藏响应:', response.data);
+          if (response.data.code === 1) {
+            // 从列表中移除该商品
+            this.favoriteProducts = this.favoriteProducts.filter(
+              product => product.id !== productId
+            );
+            alert('取消收藏成功');
+          } else {
+            alert(response.data.message || '取消收藏失败');
+          }
+        })
+        .catch(error => {
+          console.error('取消收藏错误:', error);
+          alert(error.response?.data?.message || '网络错误，请稍后重试');
+        });
     }
   },
   mounted() {
-    this.fetchUserInfo()
+    this.fetchUserInfo();
+    if (this.activeTab === 'favorites') {
+      this.fetchFavoriteProducts();
+    }
+  },
+  watch: {
+    activeTab(newTab) {
+      if (newTab === 'favorites') {
+        this.fetchFavoriteProducts();
+      }
+    }
   }
 }
 </script>
@@ -249,10 +307,36 @@ export default {
         <!-- 我的收藏 -->
         <div v-if="activeTab === 'favorites'" class="profile-section">
           <h3>我的收藏</h3>
-          <div class="empty-state">
+          
+          <div v-if="loading" class="loading-state">
+            <i class="loading-icon">⏳</i>
+            <p>加载中...</p>
+          </div>
+          
+          <div v-else-if="error" class="error-state">
+            <i class="error-icon">❌</i>
+            <p>{{ error }}</p>
+            <button class="btn retry-btn" @click="fetchFavoriteProducts">重试</button>
+          </div>
+          
+          <div v-else-if="favoriteProducts.length === 0" class="empty-state">
             <i class="empty-icon">📚</i>
             <p>暂无收藏内容</p>
             <button class="btn explore-btn" @click="goToHome">去发现</button>
+          </div>
+          
+          <div v-else class="favorites-grid">
+            <div v-for="product in favoriteProducts" :key="product.id" class="favorite-item">
+              <img :src="product.imageUrl" :alt="product.title" class="product-image" />
+              <div class="product-info">
+                <h4>{{ product.title }}</h4>
+                <p class="price">¥{{ product.price }}</p>
+                <p class="description">{{ product.description }}</p>
+              </div>
+              <button class="remove-btn" @click="removeFavorite(product.id)">
+                <i class="icon">❌</i> 取消收藏
+              </button>
+            </div>
           </div>
         </div>
 
@@ -949,5 +1033,105 @@ export default {
 
 .logout-btn .icon {
   font-size: 18px;
+}
+
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.loading-icon,
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.retry-btn {
+  background: #ff5722;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.retry-btn:hover {
+  background: #f4511e;
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.favorite-item {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.favorite-item:hover {
+  transform: translateY(-5px);
+}
+
+.product-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.product-info {
+  padding: 15px;
+}
+
+.product-info h4 {
+  margin: 0 0 10px;
+  color: #333;
+  font-size: 16px;
+}
+
+.price {
+  color: #ff5722;
+  font-weight: bold;
+  font-size: 18px;
+  margin: 10px 0;
+}
+
+.description {
+  color: #666;
+  font-size: 14px;
+  margin: 10px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.remove-btn {
+  width: 100%;
+  padding: 10px;
+  background: #f44336;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.3s;
+}
+
+.remove-btn:hover {
+  background: #d32f2f;
 }
 </style>
