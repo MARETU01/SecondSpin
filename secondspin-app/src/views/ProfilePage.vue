@@ -25,7 +25,18 @@ export default {
       ],
       favoriteProducts: [],
       loading: false,
-      error: null
+      error: null,
+      currentPage: 1,
+      pageSize: 10,
+      totalPages: 1,
+      totalItems: 0,
+      viewHistory: [],
+      historyLoading: false,
+      historyError: null,
+      historyCurrentPage: 1,
+      historyPageSize: 10,
+      historyTotalPages: 1,
+      historyTotalItems: 0
     }
   },
   methods: {
@@ -119,11 +130,18 @@ export default {
       this.loading = true;
       this.error = null;
       
-      this.$http.get('/favorites')
+      this.$http.get('/favorites', {
+        params: {
+          page: this.currentPage,
+          size: this.pageSize
+        }
+      })
         .then(response => {
           console.log('获取收藏商品响应:', response.data);
           if (response.data.code === 1) {
             this.favoriteProducts = response.data.data.data || [];
+            this.totalPages = response.data.data.totalPage;
+            this.totalItems = response.data.data.total;
             console.log('收藏商品列表:', this.favoriteProducts);
           } else {
             this.error = response.data.message || '获取收藏商品失败';
@@ -137,10 +155,14 @@ export default {
           this.loading = false;
         });
     },
-    removeFavorite(productId) {
+    handlePageChange(page) {
+      this.currentPage = page;
+      this.fetchFavoriteProducts();
+    },
+    removeFavorite(favoriteId) {
       this.$http.delete('/favorites', {
         params: {
-          ids: [productId]
+          ids: [favoriteId]
         }
       })
         .then(response => {
@@ -148,7 +170,7 @@ export default {
           if (response.data.code === 1) {
             // 从列表中移除该商品
             this.favoriteProducts = this.favoriteProducts.filter(
-              product => product.id !== productId
+              item => item.favoriteId !== favoriteId
             );
             alert('取消收藏成功');
           } else {
@@ -159,18 +181,95 @@ export default {
           console.error('取消收藏错误:', error);
           alert(error.response?.data?.message || '网络错误，请稍后重试');
         });
+    },
+    fetchViewHistory() {
+      this.historyLoading = true;
+      this.historyError = null;
+      
+      this.$http.get('/history', {
+        params: {
+          page: this.historyCurrentPage,
+          size: this.historyPageSize
+        }
+      })
+        .then(response => {
+          console.log('获取浏览记录响应:', response.data);
+          if (response.data.code === 1) {
+            this.viewHistory = response.data.data.data || [];
+            this.historyTotalPages = response.data.data.totalPage;
+            this.historyTotalItems = response.data.data.total;
+            console.log('浏览记录列表:', this.viewHistory);
+          } else {
+            this.historyError = response.data.message || '获取浏览记录失败';
+          }
+        })
+        .catch(error => {
+          console.error('获取浏览记录错误:', error);
+          this.historyError = error.response?.data?.message || '网络错误，请稍后重试';
+        })
+        .finally(() => {
+          this.historyLoading = false;
+        });
+    },
+    handleHistoryPageChange(page) {
+      this.historyCurrentPage = page;
+      this.fetchViewHistory();
+    },
+    removeHistoryItem(historyId) {
+      this.$http.delete('/history', {
+        params: {
+          ids: [historyId]
+        }
+      })
+        .then(response => {
+          console.log('删除浏览记录响应:', response.data);
+          if (response.data.code === 1) {
+            this.viewHistory = this.viewHistory.filter(
+              item => item.historyId !== historyId
+            );
+            alert('删除成功');
+          } else {
+            alert(response.data.message || '删除失败');
+          }
+        })
+        .catch(error => {
+          console.error('删除浏览记录错误:', error);
+          alert(error.response?.data?.message || '网络错误，请稍后重试');
+        });
+    },
+    clearAllHistory() {
+      if (confirm('确定要清空所有浏览记录吗？')) {
+        this.$http.delete('/history/all')
+          .then(response => {
+            console.log('清空浏览记录响应:', response.data);
+            if (response.data.code === 1) {
+              this.viewHistory = [];
+              alert('清空成功');
+            } else {
+              alert(response.data.message || '清空失败');
+            }
+          })
+          .catch(error => {
+            console.error('清空浏览记录错误:', error);
+            alert(error.response?.data?.message || '网络错误，请稍后重试');
+          });
+      }
     }
   },
   mounted() {
     this.fetchUserInfo();
     if (this.activeTab === 'favorites') {
       this.fetchFavoriteProducts();
+    } else if (this.activeTab === 'history') {
+      this.fetchViewHistory();
     }
   },
   watch: {
     activeTab(newTab) {
       if (newTab === 'favorites') {
         this.fetchFavoriteProducts();
+      } else if (newTab === 'history') {
+        this.fetchViewHistory();
       }
     }
   }
@@ -325,29 +424,118 @@ export default {
             <button class="btn explore-btn" @click="goToHome">去发现</button>
           </div>
           
-          <div v-else class="favorites-grid">
-            <div v-for="product in favoriteProducts" :key="product.id" class="favorite-item">
-              <img :src="product.imageUrl" :alt="product.title" class="product-image" />
-              <div class="product-info">
-                <h4>{{ product.title }}</h4>
-                <p class="price">¥{{ product.price }}</p>
-                <p class="description">{{ product.description }}</p>
+          <template v-else>
+            <div class="favorites-grid">
+              <div v-for="item in favoriteProducts" :key="item.favoriteId" class="favorite-item">
+                <img 
+                  :src="item.product.primaryImageUrl || '/default-product.jpg'" 
+                  :alt="item.product.title" 
+                  class="product-image" 
+                />
+                <div class="product-info">
+                  <h4>{{ item.product.title }}</h4>
+                  <p class="price">¥{{ item.product.price }}</p>
+                  <p class="original-price">原价: ¥{{ item.product.originalPrice }}</p>
+                  <p class="condition">商品状态: {{ item.product.condition === 'new' ? '全新' : '二手' }}</p>
+                  <p class="add-date">收藏时间: {{ formatDate(item.addDate) }}</p>
+                </div>
+                <button class="remove-btn" @click="removeFavorite(item.favoriteId)">
+                  <i class="icon">❌</i> 取消收藏
+                </button>
               </div>
-              <button class="remove-btn" @click="removeFavorite(product.id)">
-                <i class="icon">❌</i> 取消收藏
+            </div>
+            
+            <!-- 分页组件 -->
+            <div class="pagination">
+              <button 
+                class="page-btn" 
+                :disabled="currentPage === 1"
+                @click="handlePageChange(currentPage - 1)"
+              >
+                上一页
+              </button>
+              <span class="page-info">
+                第 {{ currentPage }} 页 / 共 {{ totalPages }} 页
+              </span>
+              <button 
+                class="page-btn" 
+                :disabled="currentPage === totalPages"
+                @click="handlePageChange(currentPage + 1)"
+              >
+                下一页
               </button>
             </div>
-          </div>
+          </template>
         </div>
 
         <!-- 浏览记录 -->
         <div v-if="activeTab === 'history'" class="profile-section">
-          <h3>浏览记录</h3>
-          <div class="empty-state">
+          <div class="section-header">
+            <h3>浏览记录</h3>
+            <button v-if="viewHistory.length > 0" class="btn clear-btn" @click="clearAllHistory">
+              <i class="icon">🗑️</i> 清空记录
+            </button>
+          </div>
+          
+          <div v-if="historyLoading" class="loading-state">
+            <i class="loading-icon">⏳</i>
+            <p>加载中...</p>
+          </div>
+          
+          <div v-else-if="historyError" class="error-state">
+            <i class="error-icon">❌</i>
+            <p>{{ historyError }}</p>
+            <button class="btn retry-btn" @click="fetchViewHistory">重试</button>
+          </div>
+          
+          <div v-else-if="viewHistory.length === 0" class="empty-state">
             <i class="empty-icon">👀</i>
             <p>暂无浏览记录</p>
             <button class="btn explore-btn" @click="goToHome">去逛逛</button>
           </div>
+          
+          <template v-else>
+            <div class="history-grid">
+              <div v-for="item in viewHistory" :key="item.historyId" class="history-item">
+                <img 
+                  :src="item.product.primaryImageUrl || '/default-product.jpg'" 
+                  :alt="item.product.title" 
+                  class="product-image" 
+                />
+                <div class="product-info">
+                  <h4>{{ item.product.title }}</h4>
+                  <p class="price">¥{{ item.product.price }}</p>
+                  <p class="original-price">原价: ¥{{ item.product.originalPrice }}</p>
+                  <p class="condition">商品状态: {{ item.product.condition === 'new' ? '全新' : '二手' }}</p>
+                  <p class="view-date">浏览时间: {{ formatDate(item.viewDate) }}</p>
+                </div>
+                <button class="remove-btn" @click="removeHistoryItem(item.historyId)">
+                  <i class="icon">❌</i> 删除记录
+                </button>
+              </div>
+            </div>
+            
+            <!-- 浏览记录分页组件 -->
+            <div class="pagination">
+              <button 
+                class="page-btn" 
+                :disabled="historyCurrentPage === 1"
+                @click="handleHistoryPageChange(historyCurrentPage - 1)"
+              >
+                上一页
+              </button>
+              <span class="page-info">
+                第 {{ historyCurrentPage }} 页 / 共 {{ historyTotalPages }} 页
+              </span>
+              <button 
+                class="page-btn" 
+                :disabled="historyCurrentPage === historyTotalPages"
+                @click="handleHistoryPageChange(historyCurrentPage + 1)"
+              >
+                下一页
+              </button>
+            </div>
+          </template>
         </div>
 
         <!-- 我的发布 -->
@@ -1106,6 +1294,25 @@ export default {
   margin: 10px 0;
 }
 
+.original-price {
+  color: #999;
+  font-size: 14px;
+  text-decoration: line-through;
+  margin: 5px 0;
+}
+
+.condition {
+  color: #666;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.add-date {
+  color: #999;
+  font-size: 12px;
+  margin: 5px 0;
+}
+
 .description {
   color: #666;
   font-size: 14px;
@@ -1132,6 +1339,82 @@ export default {
 }
 
 .remove-btn:hover {
+  background: #d32f2f;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  gap: 15px;
+}
+
+.page-btn {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #ff5722;
+  color: white;
+  border-color: #ff5722;
+}
+
+.page-btn:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.page-info {
+  color: #666;
+  font-size: 14px;
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.history-item {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.history-item:hover {
+  transform: translateY(-5px);
+}
+
+.view-date {
+  color: #999;
+  font-size: 12px;
+  margin: 5px 0;
+}
+
+.clear-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.clear-btn:hover {
   background: #d32f2f;
 }
 </style>
