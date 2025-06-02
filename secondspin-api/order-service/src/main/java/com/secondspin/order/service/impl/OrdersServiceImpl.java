@@ -97,6 +97,13 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
 
         Page<Orders> data = queryWrapper.page(page);
 
+        if (data.getRecords().isEmpty()) {
+            PageDTO<OrderListDTO> pageDTO = new PageDTO<>();
+            pageDTO.setTotal(data.getTotal());
+            pageDTO.setTotalPage(data.getPages());
+            return pageDTO;
+        }
+
         List<ProductViewDTO> productViews = productClient.getProductView(
                 data.getRecords().stream()
                         .map(Orders::getProductId)

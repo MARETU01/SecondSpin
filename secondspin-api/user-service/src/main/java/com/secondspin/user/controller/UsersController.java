@@ -49,7 +49,7 @@ public class UsersController {
     }
 
     @PostMapping("/forget-password/code")
-    public Result<Boolean> resetPasswordStepOne(@RequestBody Users user) {
+    public Result<Boolean> sendForgetPasswordCode(@RequestBody Users user) {
         try {
             return Result.success(usersService.sendForgetPasswordCode(user));
         } catch (Exception e) {
@@ -58,7 +58,7 @@ public class UsersController {
     }
 
     @GetMapping("/reset-password/code")
-    public Result<Boolean> resetPasswordStepTwo(@RequestHeader("user-info") String userJson) throws JsonProcessingException {
+    public Result<Boolean> sendResetPasswordCode(@RequestHeader("user-info") String userJson) throws JsonProcessingException {
         Users user = jacksonObjectMapper.readValue(userJson, Users.class);
         try {
             return Result.success(usersService.sendResetPasswordCode(user));
