@@ -72,7 +72,7 @@ public class UsersController {
                                          @RequestBody(required = false) Users user,
                                          @RequestParam String verification) throws JsonProcessingException {
         if (userJson != null && !userJson.isEmpty()) {
-            user = jacksonObjectMapper.readValue(userJson, Users.class);
+            user.setEmail(jacksonObjectMapper.readValue(userJson, Users.class).getEmail());
         }
         try {
             return Result.success(usersService.resetPassword(user, verification));
