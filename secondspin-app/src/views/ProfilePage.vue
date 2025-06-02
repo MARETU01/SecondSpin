@@ -18,6 +18,7 @@ export default {
         realName: '',
         phone: ''
       },
+      isCurrentUserProfile: false,
       isEditing: false,
       tempUserInfo: {},
       showUploadDialog: false,
@@ -71,6 +72,12 @@ export default {
             this.userInfo = {
               ...this.userInfo,
               ...response.data.data
+            }
+            // 判断是否是当前用户自己的主页 based on realName field
+            if (response.data.data.realName !== null && response.data.data.phone !== null) {
+              this.isCurrentUserProfile = true
+            } else {
+              this.isCurrentUserProfile = false
             }
           } else {
             alert(response.data.message || '获取用户信息失败')
