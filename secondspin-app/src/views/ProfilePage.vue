@@ -95,11 +95,41 @@ export default {
       this.isEditing = false
     },
     saveProfile() {
-      this.userInfo.realName = this.tempUserInfo.realName
-      this.userInfo.phone = this.tempUserInfo.phone
-      this.isEditing = false
-      localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
-      alert('保存成功！')
+      // 构建请求头中的用户信息
+      const userJson = JSON.stringify({
+        userId: this.userInfo.userId,
+        username: this.userInfo.username,
+        email: this.userInfo.email
+      });
+
+      // 构建请求体
+      const userInfo = {
+        realName: this.tempUserInfo.realName,
+        phone: this.tempUserInfo.phone
+      };
+
+      this.$http.put('/users/info', userInfo, {
+        headers: {
+          'user-info': userJson
+        }
+      })
+        .then(response => {
+          console.log('更新用户信息响应:', response.data);
+          if (response.data.code === 1) {
+            // 更新成功，更新本地用户信息
+            this.userInfo.realName = this.tempUserInfo.realName;
+            this.userInfo.phone = this.tempUserInfo.phone;
+            this.isEditing = false;
+            localStorage.setItem('userInfo', JSON.stringify(this.userInfo));
+            alert('保存成功！');
+          } else {
+            alert(response.data.message || '保存失败，请重试');
+          }
+        })
+        .catch(error => {
+          console.error('更新用户信息错误:', error);
+          alert(error.response?.data?.message || '网络错误，请稍后重试');
+        });
     },
     changePassword() {
       alert('密码修改成功！')
@@ -333,8 +363,8 @@ export default {
           </div>
           <h2>{{ userInfo.username }}</h2>
           <div class="user-status">
-            <span :class="['status-badge', userInfo.accountStatus.toLowerCase()]">
-              {{ userInfo.accountStatus === 'ACTIVE' ? '正常' : '已禁用' }}
+            <span :class="['status-badge', userInfo.accountStatus === 'active' ? 'active' : 'inactive']">
+              {{ userInfo.accountStatus === 'active' ? '正常' : '已禁用' }}
             </span>
           </div>
           <div class="user-stats">
@@ -438,8 +468,8 @@ export default {
               <div class="info-item">
                 <span class="label">账号状态：</span>
                 <span class="value">
-                  <span :class="['status-badge', userInfo.accountStatus.toLowerCase()]">
-                    {{ userInfo.accountStatus === 'ACTIVE' ? '正常' : '已禁用' }}
+                  <span :class="['status-badge', userInfo.accountStatus === 'active' ? 'active' : 'inactive']">
+                    {{ userInfo.accountStatus === 'active' ? '正常' : '已禁用' }}
                   </span>
                 </span>
               </div>
