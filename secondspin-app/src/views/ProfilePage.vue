@@ -36,7 +36,14 @@ export default {
       historyCurrentPage: 1,
       historyPageSize: 10,
       historyTotalPages: 1,
-      historyTotalItems: 0
+      historyTotalItems: 0,
+      myPosts: [],
+      postsLoading: false,
+      postsError: null,
+      postsCurrentPage: 1,
+      postsPageSize: 10,
+      postsTotalPages: 1,
+      postsTotalItems: 0
     }
   },
   methods: {
@@ -254,6 +261,39 @@ export default {
             alert(error.response?.data?.message || '网络错误，请稍后重试');
           });
       }
+    },
+    fetchMyPosts() {
+      this.postsLoading = true;
+      this.postsError = null;
+      
+      this.$http.get(`/products/post/${this.userInfo.userId}`, {
+        params: {
+          page: this.postsCurrentPage,
+          size: this.postsPageSize
+        }
+      })
+        .then(response => {
+          console.log('获取个人发布响应:', response.data);
+          if (response.data.code === 1) {
+            this.myPosts = response.data.data.data || [];
+            this.postsTotalPages = response.data.data.totalPage;
+            this.postsTotalItems = response.data.data.total;
+            console.log('个人发布列表:', this.myPosts);
+          } else {
+            this.postsError = response.data.message || '获取个人发布失败';
+          }
+        })
+        .catch(error => {
+          console.error('获取个人发布错误:', error);
+          this.postsError = error.response?.data?.message || '网络错误，请稍后重试';
+        })
+        .finally(() => {
+          this.postsLoading = false;
+        });
+    },
+    handlePostsPageChange(page) {
+      this.postsCurrentPage = page;
+      this.fetchMyPosts();
     }
   },
   mounted() {
@@ -262,6 +302,8 @@ export default {
       this.fetchFavoriteProducts();
     } else if (this.activeTab === 'history') {
       this.fetchViewHistory();
+    } else if (this.activeTab === 'posts') {
+      this.fetchMyPosts();
     }
   },
   watch: {
@@ -270,6 +312,8 @@ export default {
         this.fetchFavoriteProducts();
       } else if (newTab === 'history') {
         this.fetchViewHistory();
+      } else if (newTab === 'posts') {
+        this.fetchMyPosts();
       }
     }
   }
@@ -540,12 +584,71 @@ export default {
 
         <!-- 我的发布 -->
         <div v-if="activeTab === 'posts'" class="profile-section">
-          <h3>我的发布</h3>
-          <div class="empty-state">
+          <div class="section-header">
+            <h3>我的发布</h3>
+            <button class="btn post-btn" @click="goToHome">
+              <i class="icon">📝</i> 发布新商品
+            </button>
+          </div>
+          
+          <div v-if="postsLoading" class="loading-state">
+            <i class="loading-icon">⏳</i>
+            <p>加载中...</p>
+          </div>
+          
+          <div v-else-if="postsError" class="error-state">
+            <i class="error-icon">❌</i>
+            <p>{{ postsError }}</p>
+            <button class="btn retry-btn" @click="fetchMyPosts">重试</button>
+          </div>
+          
+          <div v-else-if="myPosts.length === 0" class="empty-state">
             <i class="empty-icon">📝</i>
             <p>暂无发布内容</p>
             <button class="btn explore-btn" @click="goToHome">去发布</button>
           </div>
+          
+          <template v-else>
+            <div class="posts-grid">
+              <div v-for="item in myPosts" :key="item.productId" class="post-item">
+                <img 
+                  :src="item.primaryImageUrl ? `/images/products/${item.primaryImageUrl}` : '/default-product.jpg'" 
+                  :alt="item.title" 
+                  class="product-image" 
+                />
+                <div class="product-info">
+                  <h4>{{ item.title }}</h4>
+                  <p class="price">¥{{ item.price }}</p>
+                  <p class="original-price">原价: ¥{{ item.originalPrice }}</p>
+                  <p class="condition">商品状态: {{ item.condition === 'new' ? '全新' : '二手' }}</p>
+                  <p class="post-date">发布时间: {{ formatDate(item.postDate) }}</p>
+                  <p class="view-count">浏览: {{ item.viewCount }}</p>
+                  <p class="favorite-count">收藏: {{ item.favoriteCount }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 个人发布分页组件 -->
+            <div class="pagination">
+              <button 
+                class="page-btn" 
+                :disabled="postsCurrentPage === 1"
+                @click="handlePostsPageChange(postsCurrentPage - 1)"
+              >
+                上一页
+              </button>
+              <span class="page-info">
+                第 {{ postsCurrentPage }} 页 / 共 {{ postsTotalPages }} 页
+              </span>
+              <button 
+                class="page-btn" 
+                :disabled="postsCurrentPage === postsTotalPages"
+                @click="handlePostsPageChange(postsCurrentPage + 1)"
+              >
+                下一页
+              </button>
+            </div>
+          </template>
         </div>
 
         <!-- 修改密码 -->
@@ -1416,5 +1519,54 @@ export default {
 
 .clear-btn:hover {
   background: #d32f2f;
+}
+
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.post-item {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.post-item:hover {
+  transform: translateY(-5px);
+}
+
+.post-date {
+  color: #999;
+  font-size: 12px;
+  margin: 5px 0;
+}
+
+.view-count,
+.favorite-count {
+  color: #666;
+  font-size: 12px;
+  margin: 5px 0;
+}
+
+.post-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.post-btn:hover {
+  background: #45a049;
 }
 </style>
