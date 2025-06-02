@@ -43,7 +43,15 @@ export default {
       postsCurrentPage: 1,
       postsPageSize: 10,
       postsTotalPages: 1,
-      postsTotalItems: 0
+      postsTotalItems: 0,
+      passwordForm: {
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+        verificationCode: ''
+      },
+      isSendingCode: false,
+      countdown: 0
     }
   },
   methods: {
@@ -131,8 +139,71 @@ export default {
           alert(error.response?.data?.message || '网络错误，请稍后重试');
         });
     },
+    sendVerificationCode() {
+      if (this.isSendingCode) return;
+      
+      this.$http.post('/users/reset-password/code', 
+        { password: this.passwordForm.oldPassword }
+      )
+        .then(response => {
+          console.log('发送验证码响应:', response.data);
+          if (response.data.code === 1) {
+            alert('验证码已发送到您的邮箱');
+            this.startCountdown();
+          } else {
+            alert(response.data.message || '发送验证码失败');
+          }
+        })
+        .catch(error => {
+          console.error('发送验证码错误:', error);
+          alert(error.response?.data?.message || '网络错误，请稍后重试');
+        });
+    },
+    startCountdown() {
+      this.isSendingCode = true;
+      this.countdown = 60;
+      const timer = setInterval(() => {
+        this.countdown--;
+        if (this.countdown <= 0) {
+          clearInterval(timer);
+          this.isSendingCode = false;
+        }
+      }, 1000);
+    },
     changePassword() {
-      alert('密码修改成功！')
+      // 验证新密码和确认密码是否一致
+      if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
+        alert('新密码和确认密码不一致');
+        return;
+      }
+
+      this.$http.post('/users/reset-password', 
+        { password: this.passwordForm.newPassword },
+        {
+          params: {
+            verification: this.passwordForm.verificationCode
+          }
+        }
+      )
+        .then(response => {
+          console.log('修改密码响应:', response.data);
+          if (response.data.code === 1) {
+            alert('密码修改成功');
+            // 清空表单
+            this.passwordForm = {
+              oldPassword: '',
+              newPassword: '',
+              confirmPassword: '',
+              verificationCode: ''
+            };
+          } else {
+            alert(response.data.message || '修改密码失败');
+          }
+        })
+        .catch(error => {
+          console.error('修改密码错误:', error);
+          alert(error.response?.data?.message || '网络错误，请稍后重试');
+        });
     },
     formatDate(dateString) {
       if (!dateString) return ''
@@ -694,15 +765,29 @@ export default {
           <form @submit.prevent="changePassword" class="profile-form">
             <div class="form-group">
               <label>当前密码</label>
-              <input type="password" />
+              <input type="password" v-model="passwordForm.oldPassword" placeholder="请输入当前密码" />
             </div>
             <div class="form-group">
               <label>新密码</label>
-              <input type="password" />
+              <input type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码" />
             </div>
             <div class="form-group">
               <label>确认新密码</label>
-              <input type="password" />
+              <input type="password" v-model="passwordForm.confirmPassword" placeholder="请再次输入新密码" />
+            </div>
+            <div class="form-group verification-group">
+              <label>验证码</label>
+              <div class="verification-input">
+                <input type="text" v-model="passwordForm.verificationCode" placeholder="请输入验证码" />
+                <button 
+                  type="button" 
+                  class="send-code-btn" 
+                  @click="sendVerificationCode"
+                  :disabled="isSendingCode"
+                >
+                  {{ isSendingCode ? `${countdown}秒后重试` : '发送验证码' }}
+                </button>
+              </div>
             </div>
             <button type="submit" class="btn save-btn">
               <i class="icon">🔒</i> 修改密码
@@ -1635,5 +1720,40 @@ export default {
 
 .post-btn:hover {
   background: #45a049;
+}
+
+.verification-group {
+  margin-bottom: 25px;
+}
+
+.verification-input {
+  display: flex;
+  gap: 10px;
+}
+
+.verification-input input {
+  flex: 1;
+}
+
+.send-code-btn {
+  padding: 0 15px;
+  background: #ff5722;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+  min-width: 120px;
+  transition: all 0.3s;
+}
+
+.send-code-btn:hover:not(:disabled) {
+  background: #f4511e;
+}
+
+.send-code-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 </style>
