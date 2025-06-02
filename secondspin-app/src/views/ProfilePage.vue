@@ -197,9 +197,13 @@ export default {
       this.fetchFavoriteProducts();
     },
     removeFavorite(favoriteId) {
+      // 找到要删除的收藏项
+      const favoriteItem = this.favoriteProducts.find(item => item.favoriteId === favoriteId);
+      if (!favoriteItem) return;
+
       this.$http.delete('/favorites', {
         params: {
-          ids: favoriteId
+          ids: favoriteItem.product.productId
         }
       })
         .then(response => {
