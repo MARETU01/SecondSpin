@@ -428,7 +428,7 @@ export default {
             <div class="favorites-grid">
               <div v-for="item in favoriteProducts" :key="item.favoriteId" class="favorite-item">
                 <img 
-                  :src="item.product.primaryImageUrl || '/default-product.jpg'" 
+                  :src="item.product.primaryImageUrl ? `/images/products/${item.product.primaryImageUrl}` : '/default-product.jpg'" 
                   :alt="item.product.title" 
                   class="product-image" 
                 />
@@ -498,7 +498,7 @@ export default {
             <div class="history-grid">
               <div v-for="item in viewHistory" :key="item.historyId" class="history-item">
                 <img 
-                  :src="item.product.primaryImageUrl || '/default-product.jpg'" 
+                  :src="item.product.primaryImageUrl ? `/images/products/${item.product.primaryImageUrl}` : '/default-product.jpg'" 
                   :alt="item.product.title" 
                   class="product-image" 
                 />
