@@ -57,7 +57,7 @@ public class UsersController {
         }
     }
 
-    @GetMapping("/reset-password/code")
+    @PostMapping("/reset-password/code")
     public Result<Boolean> sendResetPasswordCode(@RequestHeader("user-info") String userJson,
                                                  @RequestBody Users userInfo) throws JsonProcessingException {
         Users user = jacksonObjectMapper.readValue(userJson, Users.class);
