@@ -490,16 +490,10 @@ export default {
             <p>加载中...</p>
           </div>
           
-          <div v-else-if="error" class="error-state">
-            <i class="error-icon">❌</i>
-            <p>{{ error }}</p>
-            <button class="btn retry-btn" @click="fetchFavoriteProducts">重试</button>
-          </div>
-          
           <div v-else-if="favoriteProducts.length === 0" class="empty-state">
             <i class="empty-icon">📚</i>
             <p>暂无收藏内容</p>
-            <button class="btn explore-btn" @click="goToHome">去发现</button>
+            <button class="btn explore-btn" @click="goToHome">去看看</button>
           </div>
           
           <template v-else>
@@ -567,16 +561,10 @@ export default {
             <p>加载中...</p>
           </div>
           
-          <div v-else-if="historyError" class="error-state">
-            <i class="error-icon">❌</i>
-            <p>{{ historyError }}</p>
-            <button class="btn retry-btn" @click="fetchViewHistory">重试</button>
-          </div>
-          
           <div v-else-if="viewHistory.length === 0" class="empty-state">
             <i class="empty-icon">👀</i>
             <p>暂无浏览记录</p>
-            <button class="btn explore-btn" @click="goToHome">去逛逛</button>
+            <button class="btn explore-btn" @click="goToHome">去看看</button>
           </div>
           
           <template v-else>
@@ -642,12 +630,6 @@ export default {
           <div v-if="postsLoading" class="loading-state">
             <i class="loading-icon">⏳</i>
             <p>加载中...</p>
-          </div>
-          
-          <div v-else-if="postsError" class="error-state">
-            <i class="error-icon">❌</i>
-            <p>{{ postsError }}</p>
-            <button class="btn retry-btn" @click="fetchMyPosts">重试</button>
           </div>
           
           <div v-else-if="myPosts.length === 0" class="empty-state">
