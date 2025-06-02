@@ -471,11 +471,18 @@ export default {
           <template v-else>
             <div class="favorites-grid">
               <div v-for="item in favoriteProducts" :key="item.favoriteId" class="favorite-item">
-                <img 
-                  :src="item.product.primaryImageUrl ? `/images/products/${item.product.primaryImageUrl}` : '/default-product.jpg'" 
-                  :alt="item.product.title" 
-                  class="product-image" 
-                />
+                <div class="image-container">
+                  <img 
+                    v-if="item.product.primaryImageUrl"
+                    :src="`/images/products/${item.product.primaryImageUrl}`" 
+                    :alt="item.product.title" 
+                    class="product-image" 
+                  />
+                  <div v-else class="no-image">
+                    <i class="icon">🖼️</i>
+                    <span>暂无图片</span>
+                  </div>
+                </div>
                 <div class="product-info">
                   <h4>{{ item.product.title }}</h4>
                   <p class="price">¥{{ item.product.price }}</p>
@@ -541,11 +548,18 @@ export default {
           <template v-else>
             <div class="history-grid">
               <div v-for="item in viewHistory" :key="item.historyId" class="history-item">
-                <img 
-                  :src="item.product.primaryImageUrl ? `/images/products/${item.product.primaryImageUrl}` : '/default-product.jpg'" 
-                  :alt="item.product.title" 
-                  class="product-image" 
-                />
+                <div class="image-container">
+                  <img 
+                    v-if="item.product.primaryImageUrl"
+                    :src="`/images/products/${item.product.primaryImageUrl}`" 
+                    :alt="item.product.title" 
+                    class="product-image" 
+                  />
+                  <div v-else class="no-image">
+                    <i class="icon">🖼️</i>
+                    <span>暂无图片</span>
+                  </div>
+                </div>
                 <div class="product-info">
                   <h4>{{ item.product.title }}</h4>
                   <p class="price">¥{{ item.product.price }}</p>
@@ -611,11 +625,18 @@ export default {
           <template v-else>
             <div class="posts-grid">
               <div v-for="item in myPosts" :key="item.productId" class="post-item">
-                <img 
-                  :src="item.primaryImageUrl ? `/images/products/${item.primaryImageUrl}` : '/default-product.jpg'" 
-                  :alt="item.title" 
-                  class="product-image" 
-                />
+                <div class="image-container">
+                  <img 
+                    v-if="item.primaryImageUrl"
+                    :src="`/images/products/${item.primaryImageUrl}`" 
+                    :alt="item.title" 
+                    class="product-image" 
+                  />
+                  <div v-else class="no-image">
+                    <i class="icon">🖼️</i>
+                    <span>暂无图片</span>
+                  </div>
+                </div>
                 <div class="product-info">
                   <h4>{{ item.title }}</h4>
                   <p class="price">¥{{ item.price }}</p>
@@ -1372,6 +1393,36 @@ export default {
 
 .favorite-item:hover {
   transform: translateY(-5px);
+}
+
+.image-container {
+  width: 100%;
+  height: 200px;
+  position: relative;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #999;
+  font-size: 14px;
+  gap: 8px;
+}
+
+.no-image .icon {
+  font-size: 32px;
+  opacity: 0.5;
+}
+
+.no-image span {
+  font-size: 12px;
 }
 
 .product-image {
