@@ -20,6 +20,7 @@ export default {
         { id: 'profile', name: '个人信息' },
         { id: 'favorites', name: '我的收藏' },
         { id: 'history', name: '浏览记录' },
+        { id: 'orders', name: '我的订单' },
         { id: 'posts', name: '我的发布' },
         { id: 'security', name: '修改密码' }
       ],
@@ -225,6 +226,7 @@ export default {
         profile: '👤',
         favorites: '❤️',
         history: '📜',
+        orders: '📦',
         posts: '📝',
         security: '🔒'
       }
@@ -691,6 +693,19 @@ export default {
               </button>
             </div>
           </template>
+        </div>
+
+        <!-- 我的订单 -->
+        <div v-if="activeTab === 'orders'" class="profile-section">
+          <div class="section-header">
+            <h3>我的订单</h3>
+          </div>
+          
+          <div class="empty-state">
+            <i class="empty-icon">📦</i>
+            <p>暂无订单记录</p>
+            <button class="btn explore-btn" @click="goToHome">去逛逛</button>
+          </div>
         </div>
 
         <!-- 我的发布 -->
