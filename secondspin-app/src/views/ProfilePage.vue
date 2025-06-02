@@ -521,79 +521,12 @@ export default {
 
         <!-- 浏览记录 -->
         <div v-if="activeTab === 'history'" class="profile-section">
-          <div class="section-header">
-            <h3>浏览记录</h3>
-            <button v-if="viewHistory.length > 0" class="btn clear-btn" @click="clearAllHistory">
-              <i class="icon">🗑️</i> 清空记录
-            </button>
-          </div>
-          
-          <div v-if="historyLoading" class="loading-state">
-            <i class="loading-icon">⏳</i>
-            <p>加载中...</p>
-          </div>
-          
-          <div v-else-if="historyError" class="error-state">
-            <i class="error-icon">❌</i>
-            <p>{{ historyError }}</p>
-            <button class="btn retry-btn" @click="fetchViewHistory">重试</button>
-          </div>
-          
-          <div v-else-if="viewHistory.length === 0" class="empty-state">
+          <h3>浏览记录</h3>
+          <div class="empty-state">
             <i class="empty-icon">👀</i>
             <p>暂无浏览记录</p>
             <button class="btn explore-btn" @click="goToHome">去逛逛</button>
           </div>
-          
-          <template v-else>
-            <div class="history-grid">
-              <div v-for="item in viewHistory" :key="item.historyId" class="history-item">
-                <div class="image-container">
-                  <img 
-                    v-if="item.product.primaryImageUrl"
-                    :src="`/images/products/${item.product.primaryImageUrl}`" 
-                    :alt="item.product.title" 
-                    class="product-image" 
-                  />
-                  <div v-else class="no-image">
-                    <i class="icon">🖼️</i>
-                    <span>暂无图片</span>
-                  </div>
-                </div>
-                <div class="product-info">
-                  <h4>{{ item.product.title }}</h4>
-                  <p class="price">¥{{ item.product.price }}</p>
-                  <p class="original-price">原价: ¥{{ item.product.originalPrice }}</p>
-                  <p class="condition">商品状态: {{ item.product.condition === 'new' ? '全新' : '二手' }}</p>
-                  <p class="view-date">浏览时间: {{ formatDate(item.viewDate) }}</p>
-                </div>
-                <button class="remove-btn" @click="removeHistoryItem(item.historyId)">
-                  <i class="icon">❌</i> 删除记录
-                </button>
-              </div>
-            </div>
-            
-            <!-- 浏览记录分页组件 -->
-            <div class="pagination">
-              <button 
-                class="page-btn" 
-                :disabled="historyCurrentPage === 1"
-                @click="handleHistoryPageChange(historyCurrentPage - 1)"
-              >
-                上一页
-              </button>
-              <span class="page-info">
-                第 {{ historyCurrentPage }} 页 / 共 {{ historyTotalPages }} 页
-              </span>
-              <button 
-                class="page-btn" 
-                :disabled="historyCurrentPage === historyTotalPages"
-                @click="handleHistoryPageChange(historyCurrentPage + 1)"
-              >
-                下一页
-              </button>
-            </div>
-          </template>
         </div>
 
         <!-- 我的发布 -->
