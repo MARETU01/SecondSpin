@@ -196,6 +196,10 @@ export default {
               confirmPassword: '',
               verificationCode: ''
             };
+            // 清除 token 并跳转到登录页
+            localStorage.removeItem('token')
+            localStorage.removeItem('userInfo')
+            this.$router.push('/login')
           } else {
             alert(response.data.message || '修改密码失败');
           }
@@ -232,7 +236,7 @@ export default {
     handleLogout() {
       localStorage.removeItem('token')
       localStorage.removeItem('userInfo')
-      this.$router.push('/')
+      this.$router.push('/login')
     },
     fetchFavoriteProducts() {
       this.loading = true;
