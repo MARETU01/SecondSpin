@@ -1,6 +1,12 @@
 <script>
 
 export default {
+  props: {
+    id: {
+      type: [String, Number],
+      required: true
+    }
+  },
   data() {
     return {
       userInfo: {
@@ -57,7 +63,7 @@ export default {
   },
   methods: {
     fetchUserInfo() {
-      this.$http.get(`/users/info/1`)
+      this.$http.get(`/users/info/${this.id}`)
         .then(response => {
           console.log('获取用户信息响应:', response.data)
           if (response.data.code === 1) {
