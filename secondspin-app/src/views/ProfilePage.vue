@@ -169,7 +169,7 @@ export default {
     removeFavorite(favoriteId) {
       this.$http.delete('/favorites', {
         params: {
-          ids: [favoriteId]
+          ids: favoriteId
         }
       })
         .then(response => {
@@ -225,7 +225,7 @@ export default {
     removeHistoryItem(historyId) {
       this.$http.delete('/history', {
         params: {
-          ids: [historyId]
+          ids: historyId
         }
       })
         .then(response => {
