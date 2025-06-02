@@ -9,10 +9,7 @@ import com.secondspin.common.utils.Result;
 import com.secondspin.order.dto.OrderListDTO;
 import com.secondspin.order.pojo.Orders;
 import com.secondspin.order.service.IOrdersService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/orders")
@@ -32,6 +29,28 @@ public class OrderController {
         JwtUser user = jacksonObjectMapper.readValue(userJson, JwtUser.class);
         try {
             return Result.success(ordersService.getOrders(user.getUserId(), queryDTO));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    @PostMapping
+    public Result<Orders> createOrder(@RequestHeader("user-info") String userJson,
+                                       @RequestBody Orders order) throws JsonProcessingException {
+        JwtUser user = jacksonObjectMapper.readValue(userJson, JwtUser.class);
+        try {
+            return Result.success(ordersService.createOrder(user.getUserId(), order));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    @PutMapping
+    public Result<Orders> updateOrder(@RequestHeader("user-info") String userJson,
+                                       @RequestBody Orders order) throws JsonProcessingException {
+        JwtUser user = jacksonObjectMapper.readValue(userJson, JwtUser.class);
+        try {
+            return Result.success(ordersService.updateOrder(user.getUserId(), order));
         } catch (Exception e) {
             return Result.failure(e.getMessage());
         }

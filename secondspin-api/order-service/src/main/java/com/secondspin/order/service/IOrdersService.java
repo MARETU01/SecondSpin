@@ -16,5 +16,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IOrdersService extends IService<Orders> {
 
-    PageDTO<OrderListDTO> getOrders(Integer userId, QueryDTO queryDTO) ;
+    PageDTO<OrderListDTO> getOrders(Integer userId, QueryDTO queryDTO);
+
+    Orders createOrder(Integer userId, Orders order);
+
+    Orders updateOrder(Integer userId, Orders order);
 }

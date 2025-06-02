@@ -51,28 +51,32 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         Page<Orders> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
         page.setOptimizeCountSql(true);
 
-        LambdaQueryChainWrapper<Orders> queryWrapper = lambdaQuery()
-                .eq(Orders::getBuyerId, userId);
+        LambdaQueryChainWrapper<Orders> queryWrapper = lambdaQuery();
 
         switch (queryDTO.getFilter()) {
             case "all":
+                queryWrapper.eq(Orders::getBuyerId, userId).or().eq(Orders::getSellerId, userId);
                 break;
             case "pending":
-                queryWrapper.eq(Orders::getStatus, OrderStatus.PENDING);
+                queryWrapper.eq(Orders::getBuyerId, userId).eq(Orders::getStatus, OrderStatus.PENDING);
                 break;
             case "shipped":
-                queryWrapper.eq(Orders::getStatus, OrderStatus.SHIPPED);
+                queryWrapper.eq(Orders::getBuyerId, userId).eq(Orders::getStatus, OrderStatus.SHIPPED);
                 break;
             case "delivered":
-                queryWrapper.eq(Orders::getStatus, OrderStatus.COMPLETED);
+                queryWrapper.eq(Orders::getBuyerId, userId).eq(Orders::getStatus, OrderStatus.COMPLETED);
                 break;
             case "cancelled":
-                queryWrapper.eq(Orders::getStatus, OrderStatus.CANCELLED);
+                queryWrapper.eq(Orders::getBuyerId, userId).eq(Orders::getStatus, OrderStatus.CANCELLED);
                 break;
             case "refunded":
-                queryWrapper.eq(Orders::getStatus, OrderStatus.REFUNDED);
+                queryWrapper.eq(Orders::getBuyerId, userId).eq(Orders::getStatus, OrderStatus.REFUNDED);
+                break;
+            case "seller":
+                queryWrapper.eq(Orders::getSellerId, userId);
                 break;
             default:
+                queryWrapper.eq(Orders::getBuyerId, userId).or().eq(Orders::getSellerId, userId);
                 break;
         }
 
@@ -126,5 +130,43 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         pageDTO.setTotalPage(data.getPages());
 
         return pageDTO;
+    }
+
+    @Override
+    public Orders createOrder(Integer userId, Orders order) {
+        if (order.getBuyerId() == null) {
+            order.setBuyerId(userId);
+        } else {
+            order.setSellerId(userId);
+        }
+        save(order);
+        return order;
+    }
+
+    @Override
+    public Orders updateOrder(Integer userId, Orders order) {
+        Orders existingOrder = getById(order.getOrderId());
+        if (existingOrder == null) {
+            throw new RuntimeException("Order not found");
+        }
+        if (existingOrder.getSellerId().equals(userId)) {
+            if (existingOrder.getStatus() != OrderStatus.PENDING) {
+                throw new RuntimeException("Cannot update price for non-pending orders");
+            }
+            lambdaUpdate()
+                .eq(Orders::getOrderId, order.getOrderId())
+                .set(order.getPrice() != null, Orders::getPrice, order.getPrice())
+                .update();
+        } else {
+            if (existingOrder.getStatus() == OrderStatus.PENDING || existingOrder.getStatus() == OrderStatus.PAID) {
+                lambdaUpdate()
+                    .eq(Orders::getOrderId, order.getOrderId())
+                    .set(Orders::getShippingAddress, order.getShippingAddress())
+                    .update();
+            } else {
+                throw new RuntimeException("Cannot update shipping address for non-pending or non-paid orders");
+            }
+        }
+        return existingOrder;
     }
 }
