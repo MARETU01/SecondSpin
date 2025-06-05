@@ -9,6 +9,8 @@ import com.secondspin.user.service.IUsersService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 public class UsersController {
@@ -122,5 +124,10 @@ public class UsersController {
     @GetMapping("/{id}")
     public Users getUser(@PathVariable Long id) {
         return usersService.getById(id);
+    }
+
+    @GetMapping
+    public List<Users> getUsersInfo(@RequestParam List<Integer> ids) {
+        return usersService.listByIds(ids);
     }
 }

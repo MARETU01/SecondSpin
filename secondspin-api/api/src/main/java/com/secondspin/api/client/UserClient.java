@@ -6,6 +6,8 @@ import feign.Param;
 import feign.RequestLine;
 import org.springframework.cloud.openfeign.FeignClient;
 
+import java.util.List;
+
 @FeignClient(value = "user-service")
 public interface UserClient {
 
@@ -14,4 +16,7 @@ public interface UserClient {
 
     @RequestLine("GET /address/{id}")
     AddressDTO getAddress(@Param("id") Long id);
+
+    @RequestLine("GET /user?ids={ids}")
+    List<UserDTO> getUsersInfo(@Param("ids") List<Integer> userIds);
 }
