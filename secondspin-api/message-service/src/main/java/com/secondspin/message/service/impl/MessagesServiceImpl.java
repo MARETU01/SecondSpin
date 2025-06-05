@@ -17,4 +17,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class MessagesServiceImpl extends ServiceImpl<MessagesMapper, Messages> implements IMessagesService {
 
+    @Override
+    public Messages sendMessage(Messages message) {
+        save(message);
+        return getById(message.getMessageId());
+    }
 }

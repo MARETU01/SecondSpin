@@ -2,15 +2,11 @@
   <div>
     <AppHeader />
     <div class="reset-password-container">
-      <h2>修改密码</h2>
+      <h2>重置密码</h2>
       <form @submit.prevent="handleResetPassword">
         <div>
           <label for="reset-email">邮箱:</label>
           <input v-model="resetForm.email" type="email" id="reset-email" required>
-        </div>
-        <div>
-          <label for="reset-old-password">旧密码:</label>
-          <input v-model="resetForm.oldPassword" type="password" id="reset-old-password">
         </div>
         <div>
           <label for="reset-new-password">新密码:</label>
@@ -20,7 +16,12 @@
           <label for="reset-confirm-password">确认新密码:</label>
           <input v-model="resetForm.confirmPassword" type="password" id="reset-confirm-password" required>
         </div>
-        <button type="submit">修改密码</button>
+        <div>
+          <label for="reset-verification">验证码:</label>
+          <input v-model="verification" type="text" id="reset-verification" required>
+          <button type="button" @click="sendVerificationCode" ref="verificationBtn">获取验证码</button>
+        </div>
+        <button type="submit">重置密码</button>
       </form>
       <p><router-link to="/login">返回登录</router-link></p>
     </div>
@@ -41,28 +42,94 @@ export default {
     return {
       resetForm: {
         email: '',
-        oldPassword: '',
         newPassword: '',
         confirmPassword: ''
-      }
-    }
+      },
+      verification: '',
+      isSendingCode: false
+    };
   },
   methods: {
-    async handleResetPassword() {
+    sendVerificationCode() {
+      console.log('1. 方法开始执行');
+      if (this.isSendingCode) return;
+      this.isSendingCode = true;
+      console.log('2. 防重复点击逻辑通过');
+
       if (this.resetForm.newPassword !== this.resetForm.confirmPassword) {
-        return this.$message.error('两次输入的新密码不一致');
+        alert('两次输入的新密码不一致'); 
+        this.isSendingCode = false;
+        return;
+      }
+      console.log('3. 密码验证通过，准备发送请求');
+
+      this.$http.post('/users/forget-password/code', { email: this.resetForm.email })
+        .then(response => {
+          console.log('验证码响应数据:', response.data);
+          if (response.data.code === 1) {
+            alert(response.data.message || '验证码发送成功'); 
+            this.startCountdown();
+          } else {
+            alert(response.data.message || '发送验证码失败'); 
+          }
+        })
+        .catch(error => {
+          console.error('验证码请求错误:', error);
+          alert('网络错误，请稍后重试');
+        })
+        .finally(() => {
+          this.isSendingCode = false;
+        });
+    },
+
+    startCountdown() {
+      let countdown = 60;
+      const btn = this.$refs.verificationBtn;
+      btn.disabled = true;
+      const timer = setInterval(() => {
+        btn.textContent = `重新发送(${countdown})`;
+        countdown--;
+        if (countdown < 0) {
+          clearInterval(timer);
+          btn.disabled = false;
+          btn.textContent = '获取验证码';
+        }
+      }, 1000);
+    },
+
+    handleResetPassword() {
+      if (this.resetForm.newPassword !== this.resetForm.confirmPassword) {
+        alert('两次输入的新密码不一致');
+        return;
       }
 
-      try {
-        await this.$axios.post('/api/reset-password', this.resetForm);
-        this.$message.success('密码修改成功，请使用新密码登录');
-        this.$router.push('/login');
-      } catch (error) {
-        this.$message.error(error.response?.data?.message || '密码修改失败');
-      }
+      const payload = {
+        email: this.resetForm.email,
+        password: this.resetForm.newPassword
+      };
+
+      this.$http.post('/users/forget-password', payload, {
+        params: {
+          verification: this.verification
+        }
+      })
+        .then(response => {
+          console.log('重置密码响应数据:', response.data);
+          if (response.data.code === 1) {
+            if (confirm(response.data.message || '密码重置成功，请使用新密码登录')) { 
+              this.$router.push('/login');
+            }
+          } else {
+            alert(response.data.message || '密码重置失败');
+          }
+        })
+        .catch(error => {
+          console.error('重置密码请求错误:', error);
+          alert(error.response?.data?.message || '密码重置失败，请检查网络后重试');
+        });
     }
   }
-}
+};
 </script>
 
 <style scoped>

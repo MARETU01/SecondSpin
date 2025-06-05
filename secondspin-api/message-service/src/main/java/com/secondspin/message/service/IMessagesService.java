@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IMessagesService extends IService<Messages> {
 
+    Messages sendMessage(Messages message);
 }
