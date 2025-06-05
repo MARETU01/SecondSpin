@@ -17,11 +17,9 @@ import com.secondspin.product.pojo.Categories;
 import com.secondspin.product.pojo.ProductImages;
 import com.secondspin.product.pojo.Products;
 import com.secondspin.product.mapper.ProductsMapper;
-import com.secondspin.product.service.ICategoriesService;
-import com.secondspin.product.service.IFavoritesService;
-import com.secondspin.product.service.IProductImagesService;
-import com.secondspin.product.service.IProductsService;
+import com.secondspin.product.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,13 +48,15 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
     private final IProductImagesService productImagesService;
     private final ICategoriesService categoriesService;
     private final IFavoritesService favoritesService;
+    private final IViewHistoryService viewHistoryService;
     private final StringRedisTemplate stringRedisTemplate;
     private final UserClient userClient;
 
-    public ProductsServiceImpl(IProductImagesService productImagesService, ICategoriesService categoriesService, IFavoritesService favoritesService, StringRedisTemplate stringRedisTemplate, UserClient userClient) {
+    public ProductsServiceImpl(IProductImagesService productImagesService, ICategoriesService categoriesService, IFavoritesService favoritesService, IViewHistoryService viewHistoryService, StringRedisTemplate stringRedisTemplate, UserClient userClient) {
         this.productImagesService = productImagesService;
         this.categoriesService = categoriesService;
         this.favoritesService = favoritesService;
+        this.viewHistoryService = viewHistoryService;
         this.stringRedisTemplate = stringRedisTemplate;
         this.userClient = userClient;
     }
@@ -172,6 +172,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
             if (user != null) {
                 productInfo.setIfFavorite(favoritesService.ifFavorite(user.getUserId(), id));
                 // TODO: Update view count in the database
+                viewHistoryService.addViewHistory(user.getUserId(), id);
             } else {
                 // TODO Ensure that the view count is same in Redis and MYSQL
                 lambdaUpdate()
@@ -356,5 +357,76 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public PageDTO<ProductListDTO> getProductsByCategoryId(Integer categoryId, QueryDTO queryDTO) {
+        // 默认查询条件
+        if (queryDTO == null) {
+            queryDTO = new QueryDTO();
+        }
+
+        queryDTO.setPageNo(queryDTO.getPageNo() != null ? queryDTO.getPageNo() : 1L);
+        queryDTO.setPageSize(queryDTO.getPageSize() != null ? queryDTO.getPageSize() : 30L);
+        queryDTO.setIsAsc(queryDTO.getIsAsc() != null ? queryDTO.getIsAsc() : false);
+        queryDTO.setSortBy(queryDTO.getSortBy() != null ? queryDTO.getSortBy() : "postDate");
+
+        final int CACHE_PAGE_LIMIT = 3;
+
+        if (queryDTO.getPageNo() <= CACHE_PAGE_LIMIT) {
+            String cachedResult = stringRedisTemplate.opsForValue().get(RedisConstants.PRODUCTS_CATEGORIES_KEY + categoryId + ":" + queryDTO.getPageNo());
+            if (cachedResult != null) {
+                if (RedisConstants.NULL_VALUE.equals(cachedResult)) {
+                    throw new RuntimeException("No products found");
+                }
+            }
+            return JSON.parseObject(cachedResult, PageDTO.class);
+        }
+
+        Page<Products> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
+        page.setOptimizeCountSql(true);
+
+        LambdaQueryChainWrapper<Products> queryWrapper = lambdaQuery()
+                .eq(Products::getStatus, ProductStatus.AVAILABLE)
+                .eq(Products::getCategoryId, categoryId);
+
+        switch (queryDTO.getSortBy()) {
+            case "price":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getPrice);
+                break;
+            case "viewCount":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getViewCount);
+                break;
+            case "favoriteCount":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getFavoriteCount);
+                break;
+            case "postDate":
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getPostDate);
+                break;
+            default:
+                queryWrapper.orderBy(true, queryDTO.getIsAsc(), Products::getPostDate);
+                break;
+        }
+
+        Page<Products> data = queryWrapper.page(page);
+
+        List<ProductListDTO> result = getProductsByIdList(data.getRecords().stream()
+                .map(Products::getProductId)
+                .collect(Collectors.toList()));
+
+        PageDTO<ProductListDTO> pageDTO = new PageDTO<>();
+        pageDTO.setData(result);
+        pageDTO.setTotal(data.getTotal());
+        pageDTO.setTotalPage(data.getPages());
+
+        if (queryDTO.getPageNo() <= CACHE_PAGE_LIMIT) {
+            stringRedisTemplate.opsForValue().set(
+                    RedisConstants.PRODUCTS_CATEGORIES_KEY + categoryId + ":" + queryDTO.getPageNo(),
+                    JSON.toJSONString(pageDTO),
+                    RedisConstants.PRODUCTS_CATEGORIES_TTL + random.nextInt(10),
+                    TimeUnit.MINUTES
+            );
+        }
+        return pageDTO;
     }
 }

@@ -11,6 +11,7 @@ import com.secondspin.product.mapper.ViewHistoryMapper;
 import com.secondspin.product.service.IProductsService;
 import com.secondspin.product.service.IViewHistoryService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public class ViewHistoryServiceImpl extends ServiceImpl<ViewHistoryMapper, ViewH
 
     private final IProductsService productsService;
 
-    public ViewHistoryServiceImpl(IProductsService productsService) {
+    public ViewHistoryServiceImpl(@Lazy IProductsService productsService) {
         this.productsService = productsService;
     }
 

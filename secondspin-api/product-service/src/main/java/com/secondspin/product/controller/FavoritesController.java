@@ -50,4 +50,16 @@ public class FavoritesController {
             return Result.failure(e.getMessage());
         }
     }
+
+    @PostMapping
+    public Result<Boolean> addFavorites(@RequestHeader("user-info") String userJson,
+                                        @RequestBody Favorites favorites) throws JsonProcessingException {
+        JwtUser user = jacksonObjectMapper.readValue(userJson, JwtUser.class);
+        favorites.setUserId(user.getUserId());
+        try {
+            return Result.success(favoritesService.save(favorites));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
 }

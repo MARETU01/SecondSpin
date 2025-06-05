@@ -30,4 +30,6 @@ public interface IProductsService extends IService<Products> {
     PageDTO<ProductListDTO> getPostProducts(Integer sellerId, QueryDTO queryDTO);
 
     List<ProductListDTO> getProductsByIdList(List<Integer> Ids);
+
+    PageDTO<ProductListDTO> getProductsByCategoryId(Integer categoryId, QueryDTO queryDTO);
 }
