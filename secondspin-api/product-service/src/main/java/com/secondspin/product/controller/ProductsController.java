@@ -52,6 +52,16 @@ public class ProductsController {
         }
     }
 
+    @GetMapping("/search")
+    public Result<PageDTO<ProductListDTO>> searchProducts(@RequestParam("keyword") String keyword,
+                                                           QueryDTO queryDTO) {
+        try {
+            return Result.success(productsService.searchProducts(keyword, queryDTO));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
     @GetMapping("/{id}")
     public Result<ProductInfoDTO> getProduct(@PathVariable("id") Integer id, @RequestHeader(value = "user-info", required = false) String userJson) throws JsonProcessingException {
         JwtUser user = null;

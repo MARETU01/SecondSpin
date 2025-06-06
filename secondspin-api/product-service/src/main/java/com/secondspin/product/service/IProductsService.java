@@ -25,6 +25,8 @@ public interface IProductsService extends IService<Products> {
 
     PageDTO<ProductListDTO> getHomeProducts(QueryDTO queryDTO);
 
+    PageDTO<ProductListDTO> searchProducts(String keyword, QueryDTO queryDTO);
+
     ProductInfoDTO getProductInfo(JwtUser user, Integer id);
 
     PageDTO<ProductListDTO> getPostProducts(Integer sellerId, QueryDTO queryDTO);
