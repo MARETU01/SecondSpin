@@ -112,8 +112,9 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
                 if (RedisConstants.NULL_VALUE.equals(cachedResult)) {
                     throw new RuntimeException("No products found");
                 }
+            } else {
+                return JSON.parseObject(cachedResult, PageDTO.class);
             }
-            return JSON.parseObject(cachedResult, PageDTO.class);
         }
 
         Page<Products> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
