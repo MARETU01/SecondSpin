@@ -7,7 +7,7 @@
       </div>
       
       <div class="user-actions">
-        <button class="btn publish-btn" @click="$router.push('/publish')">
+        <button class="btn publish-btn" @click="$router.push('/create')">
           <i class="icon">+</i> 发布商品
         </button>
         <div class="auth-section">

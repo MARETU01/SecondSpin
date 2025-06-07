@@ -1,37 +1,80 @@
 <template>
   <nav class="category-nav">
-    <ul>
-      <li 
-        v-for="category in categories" 
-        :key="category"
-        :class="{ active: selectedCategory === category }"
+    <div v-if="loading" class="loading">加载分类中...</div>
+    <div v-else-if="error" class="error">{{ error }}</div>
+    <div v-else class="category-grid">
+      <div 
+        v-for="category in categoryList" 
+        :key="category.categoryId"
+        class="category-item"
+        :class="{ active: selectedCategoryId === category.categoryId }"
         @click="selectCategory(category)"
       >
-        {{ category }}
-      </li>
-    </ul>
+        {{ category.name }}
+      </div>
+    </div>
   </nav>
 </template>
 
 <script>
+import http from '@/http';
+
 export default {
   name: 'CategoryNav',
-  props: {
-    categories: {
-      type: Array,
-      required: true
-    }
-  },
   data() {
     return {
-      selectedCategory: '全部'
+      categoryList: [],
+      selectedCategoryId: 0, // 默认选中"全部"
+      loading: false,
+      error: null
     }
   },
   methods: {
     selectCategory(category) {
-      this.selectedCategory = category
-      this.$emit('category-selected', category)
+      this.selectedCategoryId = category.categoryId
+      this.$emit('category-selected', category.categoryId)
+    },
+    async fetchCategories() {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await http.get('/categories')
+        if (response.data && response.data.code === 1) {
+          this.categoryList = response.data.data
+          // 添加"全部"选项作为第一个分类
+          this.categoryList.unshift({
+            categoryId: 0,
+            name: 'All',
+            description: '所有商品分类',
+            iconUrl: ''
+          })
+        } else {
+          this.error = response.data.message || '获取分类失败'
+        }
+      } catch (err) {
+        this.error = err.response?.data?.message || err.message || '请求分类时出错'
+        console.error('获取分类出错:', err)
+        // 出错时使用默认分类
+        this.categoryList = this.getDefaultCategories()
+      } finally {
+        this.loading = false
+      }
+    },
+    getDefaultCategories() {
+      return [
+        { categoryId: 0, name: '全部', description: '所有商品分类' },
+        { categoryId: 1, name: '电子产品', description: '电子设备' },
+        { categoryId: 2, name: '服装', description: '服装配饰' },
+        { categoryId: 3, name: '家具', description: '家居用品' },
+        { categoryId: 4, name: '书籍', description: '图书教材' },
+        { categoryId: 5, name: '运动器材', description: '体育用品' },
+        { categoryId: 6, name: '母婴用品', description: '儿童用品' },
+        { categoryId: 7, name: '其他', description: '其他商品' }
+      ]
     }
+  },
+  created() {
+    this.fetchCategories()
   }
 }
 </script>
@@ -43,33 +86,53 @@ export default {
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-ul {
-  list-style: none;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin: 0;
-  padding: 0;
+.loading, .error {
+  text-align: center;
+  padding: 10px;
+}
+
+.error {
+  color: #ff4444;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
   max-width: 1200px;
   margin: 0 auto;
-  overflow-x: auto;
   padding: 0 15px;
 }
 
-li {
-  padding: 8px 15px;
+.category-item {
+  padding: 10px 5px;
   cursor: pointer;
   white-space: nowrap;
+  text-align: center;
   border-radius: 15px;
   transition: all 0.3s;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-li:hover {
+.category-item:hover {
   background-color: #f5f5f5;
 }
 
-li.active {
+.category-item.active {
   background-color: #ff5722;
   color: white;
+}
+
+@media (max-width: 768px) {
+  .category-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 </style>

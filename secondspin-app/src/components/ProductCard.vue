@@ -1,21 +1,24 @@
 <template>
   <div class="product-card">
     <div class="product-image">
-      <img :src="product.image || 'https://via.placeholder.com/250'" :alt="product.title">
+      <img :src="getProductImageUrl(product.primaryImageUrl)" :alt="product.title">
       <span class="condition" :class="getConditionClass(product.condition)">
-        {{ product.condition }}
+        {{ formatCondition(product.condition) }}
       </span>
     </div>
     
     <div class="product-info">
       <h3 class="title">{{ product.title }}</h3>
       <div class="price-section">
-        <span class="current-price">¥{{ product.price }}</span>
-        <span class="original-price">¥{{ product.originalPrice }}</span>
+        <span class="current-price">¥{{ product.price.toFixed(2) }}</span>
+        <span v-if="product.originalPrice" class="original-price">¥{{ product.originalPrice.toFixed(2) }}</span>
       </div>
       <div class="meta-info">
-        <span class="location">{{ product.location }}</span>
-        <span class="time">{{ product.publishTime }}</span>
+        <span class="stats">
+          <span class="view-count">👁️ {{ product.viewCount }}</span>
+          <span class="favorite-count">❤️ {{ product.favoriteCount }}</span>
+        </span>
+        <span class="time">{{ formatDate(product.postDate) }}</span>
       </div>
     </div>
   </div>
@@ -33,19 +36,45 @@ export default {
   methods: {
     getConditionClass(condition) {
       const conditionMap = {
-        '全新': 'new',
-        '95成新': 'like-new',
-        '9成新': 'good',
-        '8成新': 'fair',
-        '7成新': 'poor'
+        'new': 'new',
+        'like-new': 'like-new',
+        'good': 'good',
+        'fair': 'fair',
+        'poor': 'poor'
       }
       return conditionMap[condition] || 'default'
+    },
+    formatCondition(condition) {
+      const conditionTextMap = {
+        'new': '全新',
+        'like-new': '95成新',
+        'good': '9成新',
+        'fair': '8成新',
+        'poor': '7成新'
+      }
+      return conditionTextMap[condition] || condition || '未知'
+    },
+    getProductImageUrl(imageName) {
+      if (!imageName) {
+        return '/images/products/8e9e7e86de484a269a143d7e726f8f4c.jpg'
+      }
+      return `/images/products/${imageName}`
+    },
+    formatDate(dateString) {
+      if (!dateString) return '未知时间'
+      try {
+        const date = new Date(dateString)
+        return date.toLocaleDateString()
+      } catch (e) {
+        return dateString
+      }
     }
   }
 }
 </script>
 
 <style scoped>
+/* 保持原有的基础样式不变 */
 .product-card {
   background-color: white;
   border-radius: 8px;
@@ -147,5 +176,17 @@ export default {
   justify-content: space-between;
   font-size: 0.8rem;
   color: #666;
+}
+
+/* 新增的统计信息样式 */
+.stats {
+  display: flex;
+  gap: 8px;
+}
+
+.view-count, .favorite-count {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 </style>
