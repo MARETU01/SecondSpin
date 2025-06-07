@@ -121,6 +121,19 @@ public class UsersController {
         }
     }
 
+    @GetMapping
+    public Result<Users> getAllUsers(@RequestHeader(value = "user-info", required = false) String userJson) throws JsonProcessingException {
+        if (userJson == null || userJson.isEmpty()) {
+            return Result.failure("Not login in");
+        }
+        try {
+            Users user = jacksonObjectMapper.readValue(userJson, Users.class);
+            return Result.success(user);
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
     @GetMapping("/{id}")
     public Users getUser(@PathVariable Long id) {
         return usersService.getById(id);
