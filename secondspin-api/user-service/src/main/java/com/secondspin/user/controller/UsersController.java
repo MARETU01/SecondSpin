@@ -121,7 +121,7 @@ public class UsersController {
         }
     }
 
-    @GetMapping
+    @GetMapping("/validate")
     public Result<Users> getAllUsers(@RequestHeader(value = "user-info", required = false) String userJson) throws JsonProcessingException {
         if (userJson == null || userJson.isEmpty()) {
             return Result.failure("Not login in");
