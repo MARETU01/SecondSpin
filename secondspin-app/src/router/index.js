@@ -5,6 +5,7 @@ import LoginView from "../views/LoginView.vue"
 import RegisterView from "@/views/RegisterView.vue"
 import ResetPasswordView from "@/views/ResetPasswordView.vue"
 import ProfilePage from "@/views/ProfilePage.vue"
+import CreateView from '@/views/CreateView.vue'
 
 const routes = [
   {
@@ -32,6 +33,11 @@ const routes = [
     name: 'Profile',
     component: ProfilePage,
     props: true
+  },
+  {
+    path: '/create',
+    name: 'Create',
+    component: CreateView
   }
 ]
 
