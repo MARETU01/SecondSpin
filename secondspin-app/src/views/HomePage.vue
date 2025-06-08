@@ -184,9 +184,34 @@ export default {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+  grid-template-columns: repeat(5, 1fr); /* 5列布局 */
+  gap: 20px; /* 产品之间的间距 */
+  padding: 20px 0;
+}
+
+/* 响应式设计 - 在不同屏幕尺寸下调整列数 */
+@media (max-width: 1200px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr); /* 屏幕小于1200px时4列 */
+  }
+}
+
+@media (max-width: 992px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr); /* 屏幕小于992px时3列 */
+  }
+}
+
+@media (max-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr); /* 屏幕小于768px时2列 */
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: 1fr; /* 屏幕小于480px时1列 */
+  }
 }
 
 h2 {

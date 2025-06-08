@@ -267,7 +267,7 @@ export default {
             formData.append('files', file)
             // 设置第一张有图片的为主图
             if (primaryOrder === null) {
-              primaryOrder = index
+              primaryOrder = index + 1
             }
           }
         })

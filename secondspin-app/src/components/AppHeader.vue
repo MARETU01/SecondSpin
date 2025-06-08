@@ -7,15 +7,20 @@
       </div>
       
       <div class="user-actions">
-        <button class="btn publish-btn" @click="$router.push('/create')">
-          <i class="icon">+</i> 发布商品
-        </button>
         <div class="auth-section">
           <button v-if="!isLoggedIn" class="btn login-btn" @click="$router.push('/login')">
             登录/注册
           </button>
-          <div v-else class="user-avatar" @click="gotoProfile">
-            <img :src="userAvatar" alt="用户头像" />
+          <div v-else class="logged-in-section">
+            <button class="btn message-btn" @click="$router.push('/messages')">
+              <i class="icon">💬</i>
+            </button>
+            <button class="btn publish-btn" @click="$router.push('/create')">
+              <i class="icon">+</i> 发布商品
+            </button>
+            <div class="user-avatar" @click="gotoProfile">
+              <img :src="userAvatar" alt="用户头像" />
+            </div>
           </div>
         </div>
       </div>
@@ -29,7 +34,7 @@ export default {
   data() {
     return {
       isLoggedIn: false,
-      userAvatar: '/default-avatar.png'
+      userAvatar: '/default.png'
     }
   },
   created() {
@@ -38,23 +43,41 @@ export default {
   methods: {
     checkLoginStatus() {
       const token = localStorage.getItem('token')
-      this.isLoggedIn = !!token
-      if (this.isLoggedIn) {
-        this.getUserInfo()
+      if (token) {
+        this.validateUser()
+      } else {
+        this.isLoggedIn = false
       }
     },
-    getUserInfo() {
-      // 从localStorage获取用户信息
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-      if (userInfo && userInfo.avatarUrl) {
-        this.userAvatar = userInfo.avatarUrl
-      }
+    validateUser() {
+      this.$http.get('/users/validate').then(response => {
+        console.log(response);
+        
+        if (response.data.code === 1 && response.data.data) {
+          this.isLoggedIn = true
+          const user = response.data.data
+          this.userId = user.id
+          this.userAvatar = user.avatarUrl || '/default.png'
+          // 更新本地存储的用户信息
+          localStorage.setItem('userInfo', JSON.stringify(user))
+        } else {
+          this.handleLogout()
+        }
+      }).catch(() => {
+        this.handleLogout()
+      })
+    },
+    handleLogout() {
+      this.isLoggedIn = false
+      localStorage.removeItem('token')
+      localStorage.removeItem('userInfo')
     },
     gotoProfile() {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-      if (userInfo && userInfo.userId) {
-        this.$router.push(`/profile/${userInfo.userId}`)
-      }
+       const user = localStorage.getItem('userInfo');
+       if (user) {
+        this.userAvatar = user.avatarUrl;
+        this.$router.push(`/profile/${user.userId}`);
+       }
     }
   }
 }
@@ -106,6 +129,12 @@ export default {
   gap: 15px;
 }
 
+.logged-in-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .btn {
   padding: 8px 15px;
   border-radius: 4px;
@@ -122,6 +151,17 @@ export default {
 
 .publish-btn:hover {
   background-color: #f5f5f5;
+}
+
+.message-btn {
+  background-color: transparent;
+  color: white;
+  border: 1px solid white;
+  padding: 8px 12px;
+}
+
+.message-btn:hover {
+  background-color: rgba(255,255,255,0.1);
 }
 
 .login-btn {

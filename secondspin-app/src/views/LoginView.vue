@@ -46,11 +46,7 @@ export default {
           if (response.data.code === 1) {
             // 登录成功，存储token到localStorage
             localStorage.setItem('token', response.data.data);
-            // 存储用户信息到Vuex
-            this.$store.commit('setUser', {
-              token: response.data.data,
-              // 可从JWT中解析用户信息，或等待后续接口获取
-            });
+            
             alert('登录成功');
             // 跳转到根路径'/'
             this.$router.push('/');
