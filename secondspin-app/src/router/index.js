@@ -7,6 +7,7 @@ import ResetPasswordView from "@/views/ResetPasswordView.vue"
 import ProfilePage from "@/views/ProfilePage.vue"
 import CreateView from '@/views/CreateView.vue'
 import ItemInfo from "@/views/ItemInfo.vue";
+import ChatView from "@/views/ChatView.vue"
 
 const routes = [
   {
@@ -39,6 +40,11 @@ const routes = [
     path: '/create',
     name: 'Create',
     component: CreateView
+  },
+  {
+    path: '/messages',
+    name: 'Chat',
+    component: ChatView
   },
   {
     path: '/iteminfo/:id',

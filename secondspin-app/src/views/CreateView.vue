@@ -3,136 +3,84 @@
     <Header></Header>
     <div class="container">
       <h1>发布商品</h1>
-      
+
       <form @submit.prevent="submitForm" class="product-form">
         <!-- 商品基本信息 -->
         <div class="form-section">
           <h2>商品信息</h2>
           <div class="form-group">
             <label for="title">商品标题*</label>
-            <input 
-              type="text" 
-              id="title" 
-              v-model="product.title" 
-              required
-              maxlength="50"
-              placeholder="请输入商品标题（最多50字）"
-            >
+            <input type="text" id="title" v-model="product.title" required maxlength="50" placeholder="请输入商品标题（最多50字）">
           </div>
-          
+
           <div class="form-group">
             <label for="description">商品描述*</label>
-            <textarea 
-              id="description" 
-              v-model="product.description" 
-              required
-              maxlength="500"
-              rows="5"
-              placeholder="请输入商品详细描述（最多500字）"
-            ></textarea>
+            <textarea id="description" v-model="product.description" required maxlength="500" rows="5"
+              placeholder="请输入商品详细描述（最多500字）"></textarea>
           </div>
-          
+
           <div class="form-group">
             <label for="category">商品分类*</label>
             <select id="category" v-model="product.categoryId" required>
               <option value="" disabled>请选择分类</option>
-              <option 
-                v-for="category in categories" 
-                :key="category.categoryId" 
-                :value="category.categoryId"
-              >
+              <option v-for="category in categories" :key="category.categoryId" :value="category.categoryId">
                 {{ category.name }}
               </option>
             </select>
           </div>
         </div>
-        
+
         <!-- 价格信息 -->
         <div class="form-section">
           <h2>价格信息</h2>
           <div class="form-group">
             <label for="price">现价*</label>
-            <input 
-              type="number" 
-              id="price" 
-              v-model.number="product.price" 
-              min="0" 
-              step="0.01" 
-              required
-              placeholder="请输入商品现价"
-            >
+            <input type="number" id="price" v-model.number="product.price" min="0" step="0.01" required
+              placeholder="请输入商品现价">
           </div>
-          
+
           <div class="form-group">
             <label for="originalPrice">原价</label>
-            <input 
-              type="number" 
-              id="originalPrice" 
-              v-model.number="product.originalPrice" 
-              min="0" 
-              step="0.01"
-              placeholder="请输入商品原价（可选）"
-            >
+            <input type="number" id="originalPrice" v-model.number="product.originalPrice" min="0" step="0.01"
+              placeholder="请输入商品原价（可选）">
           </div>
         </div>
-        
+
         <!-- 商品图片 -->
         <div class="form-section">
           <h2>商品图片</h2>
           <p class="hint">最多可上传4张图片，第一张将作为主图</p>
-          
+
           <div class="image-upload-grid">
             <div class="image-upload-box" v-for="i in 4" :key="i">
-              <label :for="'file'+i" class="upload-label">
-                <img 
-                  v-if="previewImages[i-1]" 
-                  :src="previewImages[i-1]" 
-                  class="preview-image"
-                >
+              <label :for="'file' + i" class="upload-label">
+                <img v-if="previewImages[i - 1]" :src="previewImages[i - 1]" class="preview-image">
                 <div v-else class="upload-placeholder">
                   <span>+</span>
                   <p>点击上传图片</p>
                 </div>
               </label>
-              <input 
-                type="file" 
-                :id="'file'+i" 
-                accept="image/*" 
-                @change="handleImageUpload($event, i-1)"
-                class="file-input"
-              >
-              <button 
-                v-if="previewImages[i-1]" 
-                type="button" 
-                @click="removeImage(i-1)"
-                class="remove-btn"
-              >
+              <input type="file" :id="'file' + i" accept="image/*" @change="handleImageUpload($event, i - 1)"
+                class="file-input">
+              <button v-if="previewImages[i - 1]" type="button" @click="removeImage(i - 1)" class="remove-btn">
                 删除
               </button>
             </div>
           </div>
         </div>
-        
+
         <!-- 商品状况 -->
         <div class="form-section">
           <h2>商品状况</h2>
           <div class="condition-options">
-            <label 
-              v-for="(label, value) in conditionOptions" 
-              :key="value"
-              :class="{ active: product.condition === value }"
-            >
-              <input 
-                type="radio" 
-                v-model="product.condition" 
-                :value="value"
-                required
-              >
+            <label v-for="(label, value) in conditionOptions" :key="value"
+              :class="{ active: product.condition === value }">
+              <input type="radio" v-model="product.condition" :value="value" required>
               {{ label }}
             </label>
           </div>
         </div>
-        
+
         <!-- 提交按钮 -->
         <div class="form-actions">
           <button type="submit" :disabled="isSubmitting" class="submit-btn">
@@ -194,62 +142,61 @@ export default {
         console.error('获取分类失败:', err)
       }
     },
-    
+
     handleImageUpload(event, index) {
-    const file = event.target.files[0]
-    if (!file) return
-    
-    // 验证文件类型
-    if (!file.type.startsWith('image/')) {
-      alert('请上传图片文件')
-      return
-    }
-    
-    // 验证文件大小
-    if (file.size > 5 * 1024 * 1024) {
-      alert('图片大小不能超过5MB')
-      return
-    }
-    
-    // 更新文件数组
-    const newImageFiles = [...this.imageFiles]
-    newImageFiles[index] = file
-    this.imageFiles = newImageFiles
-    
-    // 创建预览
-    const reader = new FileReader()
-    reader.onload = (e) => {
+      const file = event.target.files[0]
+      if (!file) return
+
+      // 验证文件类型
+      if (!file.type.startsWith('image/')) {
+        alert('请上传图片文件')
+        return
+      }
+
+      // 验证文件大小
+      if (file.size > 5 * 1024 * 1024) {
+        alert('图片大小不能超过5MB')
+        return
+      }
+
+      // 更新文件数组
+      const newImageFiles = [...this.imageFiles]
+      newImageFiles[index] = file
+      this.imageFiles = newImageFiles
+
+      // 创建预览
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const newPreviewImages = [...this.previewImages]
+        newPreviewImages[index] = e.target.result
+        this.previewImages = newPreviewImages
+      }
+      reader.readAsDataURL(file)
+    },
+
+    removeImage(index) {
       const newPreviewImages = [...this.previewImages]
-      newPreviewImages[index] = e.target.result
+      const newImageFiles = [...this.imageFiles]
+
+      newPreviewImages[index] = null
+      newImageFiles[index] = null
+
       this.previewImages = newPreviewImages
-    }
-    reader.readAsDataURL(file)
-  },
-  
-  removeImage(index) {
-    const newPreviewImages = [...this.previewImages]
-    const newImageFiles = [...this.imageFiles]
-    
-    newPreviewImages[index] = null
-    newImageFiles[index] = null
-    
-    this.previewImages = newPreviewImages
-    this.imageFiles = newImageFiles
-    
-    // 重置对应的file input
-    document.getElementById(`file${index+1}`).value = ''
-  },
-    
+      this.imageFiles = newImageFiles
+
+      // 重置对应的file input
+      document.getElementById(`file${index + 1}`).value = ''
+    },
+
     async submitForm() {
-      if (this.isSubmitting) return
-      
-      
-      this.isSubmitting = true
-      this.error = null
-      
+      if (this.isSubmitting) return;
+
+      this.isSubmitting = true;
+      this.error = null;
+
       try {
-        const formData = new FormData()
-        
+        const formData = new FormData();
+
         // 添加商品数据
         formData.append('product', JSON.stringify({
           title: this.product.title,
@@ -258,49 +205,45 @@ export default {
           price: this.product.price,
           originalPrice: this.product.originalPrice,
           condition: this.product.condition
-        }))
-        
+        }));
+
         // 添加图片文件
-        let primaryOrder = null
+        let primaryOrder = null;
         this.imageFiles.forEach((file, index) => {
           if (file) {
-            formData.append('files', file)
+            formData.append('files', file);
             // 设置第一张有图片的为主图
             if (primaryOrder === null) {
-              primaryOrder = index + 1
+              primaryOrder = index + 1;
             }
           }
-        })
-        
+        });
+
         // 设置主图顺序
         if (primaryOrder !== null) {
-          formData.append('primary_order', primaryOrder)
+          formData.append('primary_order', primaryOrder);
+        }
+
+        // 使用async/await方式处理请求
+        const response = await http.post('/products', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
+        // 处理响应
+        if (response.data && response.data.code === 1) {
+          alert('商品发布成功！');
+          this.$router.push(`/iteminfo/${response.data.data}`);
+        } else {
+          this.error = response.data.message || '发布商品失败';
         }
         
-        // 提交表单
-        http.post('/products', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    }, (response) => {
-      // 成功回调
-      if (response.data && response.data.code === 1) {
-        alert('商品发布成功！');
-        this.$router.push('/');
-      } else {
-        this.error = response.data.message || '发布商品失败';
-      }
-      this.isSubmitting = false;
-    }, (err) => {
-      // 错误回调
-      this.error = err.response?.data?.message || err.message || '发布商品时出错';
-      console.error('发布商品出错:', err);
-      this.isSubmitting = false;
-    });
-        
-        
+      } catch(err) {
+        console.error('发布商品出错:', err);
+        this.error = err.response?.data?.message || err.message || '发布商品时出错';
       } finally {
-        this.isSubmitting = false
+        this.isSubmitting = false;
       }
     }
   }
@@ -333,7 +276,7 @@ h1 {
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
@@ -433,7 +376,7 @@ textarea {
   position: absolute;
   top: 5px;
   right: 5px;
-  background: rgba(255,0,0,0.7);
+  background: rgba(255, 0, 0, 0.7);
   color: white;
   border: none;
   border-radius: 4px;
@@ -443,7 +386,7 @@ textarea {
 }
 
 .remove-btn:hover {
-  background: rgba(255,0,0,0.9);
+  background: rgba(255, 0, 0, 0.9);
 }
 
 .condition-options {
