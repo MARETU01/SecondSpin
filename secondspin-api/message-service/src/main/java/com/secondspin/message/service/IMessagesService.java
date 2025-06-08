@@ -22,4 +22,6 @@ public interface IMessagesService extends IService<Messages> {
     List<MessagePreviewDTO> getMessagePreviews(Integer userId);
 
     List<Messages> getMessagesWithUserId(JwtUser user, Integer userId);
+
+    Integer getUnreadMessage(Integer userId);
 }

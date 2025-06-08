@@ -4,10 +4,10 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 39.108.112.191:8848
+        server-addr: ${YOUR_DOCKER_SERVER_IP:39.108.112.191}:8848
         file-extension: yaml
         shared-configs:
           - data-id: shared-log.yaml
         refresh-enabled: true
       discovery:
-        server-addr: 39.108.112.191:8848
+        server-addr: ${YOUR_DOCKER_SERVER_IP:39.108.112.191}:8848

@@ -120,4 +120,12 @@ public class MessagesServiceImpl extends ServiceImpl<MessagesMapper, Messages> i
                 .update();
         return messages;
     }
+
+    @Override
+    public Integer getUnreadMessage(Integer userId) {
+        return Math.toIntExact(lambdaQuery()
+                .eq(Messages::getReceiverId, userId)
+                .eq(Messages::getReadStatus, false)
+                .count());
+    }
 }

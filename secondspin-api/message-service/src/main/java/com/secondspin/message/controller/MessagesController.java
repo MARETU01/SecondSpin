@@ -45,4 +45,14 @@ public class MessagesController {
             return Result.failure(e.getMessage());
         }
     }
+
+    @GetMapping("/unread")
+    public Result<Integer> getUnreadMessages(@RequestHeader("user-info") String userJson) throws JsonProcessingException {
+        JwtUser user = jacksonObjectMapper.readValue(userJson, JwtUser.class);
+        try {
+            return Result.success(messagesService.getUnreadMessage(user.getUserId()));
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
 }
