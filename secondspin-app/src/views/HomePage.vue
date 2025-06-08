@@ -9,6 +9,7 @@
         <h2>{{ currentCategory.name }}</h2>
         <p>{{ currentCategory.description }}</p>
       </div>
+      <h2 v-else-if="searchQuery">搜索结果: {{ searchQuery }}</h2>
       <h2 v-else>热门商品</h2>
       
       <div v-if="loadingProducts" class="loading">加载中...</div>
@@ -20,6 +21,23 @@
           :product="product"
           @click="viewProductDetail(product.productId)"
         />
+      </div>
+
+      <!-- 分页组件 -->
+      <div v-if="pagination.total > 0" class="pagination">
+        <button 
+          :disabled="pagination.currentPage === 1" 
+          @click="changePage(pagination.currentPage - 1)"
+        >
+          上一页
+        </button>
+        <span>第 {{ pagination.currentPage }} 页 / 共 {{ Math.ceil(pagination.total / pagination.pageSize) }} 页</span>
+        <button 
+          :disabled="pagination.currentPage * pagination.pageSize >= pagination.total" 
+          @click="changePage(pagination.currentPage + 1)"
+        >
+          下一页
+        </button>
       </div>
     </div>
     
@@ -50,6 +68,7 @@ export default {
       currentCategory: null,
       loadingProducts: false,
       productError: null,
+      searchQuery: '',
       pagination: {
         currentPage: 1,
         pageSize: 10,
@@ -57,45 +76,22 @@ export default {
       }
     }
   },
-  computed: {
-    filteredProducts() {
-      let filtered = this.products
-      
-      if (this.selectedCategory && this.selectedCategory !== '全部') {
-        filtered = filtered.filter(p => p.category === this.selectedCategory)
-      }
-      
-      if (this.searchQuery) {
-        const query = this.searchQuery.toLowerCase()
-        filtered = filtered.filter(p => 
-          p.title.toLowerCase().includes(query) || 
-          p.description?.toLowerCase().includes(query))
-      }
-      
-      return filtered
-    }
-  },
   methods: {
-    filterByCategory(category) {
-      this.selectedCategory = category
-      // 如果需要根据分类重新从服务器获取数据，可以取消下面注释
-      // this.pagination.currentPage = 1
-      // this.fetchProducts()
-    },
     handleSearch(query) {
       this.searchQuery = query
-      // 如果需要根据搜索词重新从服务器获取数据，可以取消下面注释
-      // this.pagination.currentPage = 1
-      // this.fetchProducts()
+      this.currentCategory = null
+      this.pagination.currentPage = 1
+      this.fetchProducts()
     },
     viewProductDetail(productId) {
       this.$router.push(`/product/${productId}`)
     },
     handleCategorySelected(categoryId) {
+      this.searchQuery = ''
+      this.pagination.currentPage = 1
       if (categoryId === 0) {
-        // 选择了"全部"分类
         this.currentCategory = null
-        this.fetchAllProducts()
+        this.fetchProducts()
       } else {
         this.fetchCategoryProducts(categoryId)
       }
@@ -104,9 +100,15 @@ export default {
       this.loadingProducts = true
       this.productError = null
       try {
-        const response = await http.get(`/categories/${categoryId}`)
+        const response = await http.get(`/categories/${categoryId}`, {
+          params: {
+            pageNum: this.pagination.currentPage,
+            pageSize: this.pagination.pageSize
+          }
+        })
         if (response.data && response.data.code === 1) {
           this.currentCategory = {
+            id: categoryId,
             name: response.data.data.name,
             description: response.data.data.description
           }
@@ -122,16 +124,30 @@ export default {
         this.loadingProducts = false
       }
     },
-    async fetchAllProducts() {
+    async fetchProducts() {
       this.loadingProducts = true
       this.productError = null
       try {
-        const response = await http.get('/products/home', {
-          params: {
-            pageNum: this.pagination.currentPage,
-            pageSize: this.pagination.pageSize
-          }
-        })
+        let response
+        if (this.searchQuery) {
+          // 使用搜索接口
+          response = await http.get('/products/search', {
+            params: {
+              keyword: this.searchQuery,
+              pageNum: this.pagination.currentPage,
+              pageSize: this.pagination.pageSize
+            }
+          })
+        } else {
+          // 使用首页商品接口
+          response = await http.get('/products/home', {
+            params: {
+              pageNum: this.pagination.currentPage,
+              pageSize: this.pagination.pageSize
+            }
+          })
+        }
+        
         if (response.data && response.data.code === 1) {
           this.products = response.data.data.data || []
           this.pagination.total = response.data.data.total || 0
@@ -145,30 +161,29 @@ export default {
         this.loadingProducts = false
       }
     },
-  
-  created() {
-    this.fetchAllProducts()
-  },
-  watch: {
-    // 如果需要根据分类或搜索词重新获取数据，可以取消下面注释
-    /*
-    selectedCategory(newVal, oldVal) {
-      if (newVal !== oldVal) {
+    changePage(page) {
+      if (page < 1 || page > Math.ceil(this.pagination.total / this.pagination.pageSize)) {
+        return
+      }
+      this.pagination.currentPage = page
+      if (this.currentCategory) {
+        this.fetchCategoryProducts(this.currentCategory.id)
+      } else {
         this.fetchProducts()
       }
-    },
-    searchQuery(newVal, oldVal) {
-      if (newVal !== oldVal) {
-        this.fetchProducts()
-      }
+      // 滚动到顶部
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-    */
+  },
+  created() {
+    // 初始加载时获取全部商品
+    this.fetchProducts()
   }
-}
 }
 </script>
 
 <style scoped>
+/* 保持原有的样式不变 */
 .home {
   display: flex;
   flex-direction: column;
@@ -184,34 +199,13 @@ export default {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 5列布局 */
-  gap: 20px; /* 产品之间的间距 */
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
   padding: 20px 0;
 }
 
-/* 响应式设计 - 在不同屏幕尺寸下调整列数 */
-@media (max-width: 1200px) {
-  .product-grid {
-    grid-template-columns: repeat(4, 1fr); /* 屏幕小于1200px时4列 */
-  }
-}
-
-@media (max-width: 992px) {
-  .product-grid {
-    grid-template-columns: repeat(3, 1fr); /* 屏幕小于992px时3列 */
-  }
-}
-
-@media (max-width: 768px) {
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr); /* 屏幕小于768px时2列 */
-  }
-}
-
-@media (max-width: 480px) {
-  .product-grid {
-    grid-template-columns: 1fr; /* 屏幕小于480px时1列 */
-  }
+.category-info {
+  margin-bottom: 20px;
 }
 
 h2 {
@@ -228,5 +222,61 @@ h2 {
 
 .error {
   color: #ff4444;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 30px 0;
+  gap: 20px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 </style>
