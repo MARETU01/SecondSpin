@@ -54,12 +54,13 @@ export default {
         console.log(response);
         
         if (response.data.code === 1 && response.data.data) {
-          this.isLoggedIn = true
-          const user = response.data.data
-          this.userId = user.id
-          this.userAvatar = user.avatarUrl || '/default.png'
+          this.isLoggedIn = true;
+          const user = response.data.data;
+          console.log(user);
+          this.userId = user.id;
+          this.userAvatar = `/public/images/avatar/${user.avatarUrl}` || '/public/images/avatar/default.png';
           // 更新本地存储的用户信息
-          localStorage.setItem('userInfo', JSON.stringify(user))
+          localStorage.setItem('userInfo', JSON.stringify(user));
         } else {
           this.handleLogout()
         }
@@ -73,7 +74,7 @@ export default {
       localStorage.removeItem('userInfo')
     },
     gotoProfile() {
-       const user = localStorage.getItem('userInfo');
+       const user = JSON.parse(localStorage.getItem('userInfo'));
        if (user) {
         this.userAvatar = user.avatarUrl;
         this.$router.push(`/profile/${user.userId}`);
