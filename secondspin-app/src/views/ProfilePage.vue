@@ -440,119 +440,119 @@ export default {
     },
 
     // 获取订单列表
-    fetchOrders() {
-      this.ordersLoading = true;
-      this.ordersError = null;
-
-      // ====== Mock 数据(实际逻辑在下方被注释掉了，手动改回来即可) ======
-      const mockResponse = {
-        code: 1,
-        message: "success",
-        data: {
-          data: [
-            {
-              orderId: 1,
-              productId: 101,
-              createTime: "2025-06-01T10:00:00",
-              price: 99.99,
-              status: "PENDING",
-              payId: "PAY20250601100000",
-              payTime: null,
-              title: "示例商品 1",
-              primaryImageUrl: "http://example.com/image1.jpg"
-            },
-            {
-              orderId: 2,
-              productId: 102,
-              createTime: "2025-06-02T11:00:00",
-              price: 199.99,
-              status: "COMPLETED",
-              payId: "PAY20250602110000",
-              payTime: "2025-06-02T12:00:00",
-              title: "示例商品 2",
-              primaryImageUrl: "http://example.com/image2.jpg"
-            },
-            {
-              orderId: 3,
-              productId: 103,
-              createTime: "2025-06-03T12:00:00",
-              price: 299.99,
-              status: "SHIPPED",
-              payId: "PAY20250603120000",
-              payTime: "2025-06-03T13:00:00",
-              title: "示例商品 3",
-              primaryImageUrl: "http://example.com/image3.jpg"
-            }
-          ],
-          total: 100,
-          totalPage: 10
-        },
-        timestamp: 1754633400000
-      };
-
-      // 模拟网络延迟
-      setTimeout(() => {
-        console.log("Mock 数据加载完成:", mockResponse);
-        if (mockResponse.code === 1) {
-          this.orders = mockResponse.data.data || [];
-          this.ordersTotalPages = mockResponse.data.totalPage || 1;
-          this.ordersTotalItems = mockResponse.data.total || 0;
-        } else {
-          this.ordersError = mockResponse.message || "获取订单失败";
-          alert(this.ordersError);
-        }
-        this.ordersLoading = false;
-      }, 1000);
-    },
     // fetchOrders() {
-    //   this.ordersLoading = true; // 设置加载状态为true
-    //   this.ordersError = null; // 清除之前的错误信息
+    //   this.ordersLoading = true;
+    //   this.ordersError = null;
     //
-    //   const queryDTO = {
-    //     pageNo: this.ordersCurrentPage, // 当前页码
-    //     pageSize: this.ordersPageSize, // 每页显示数量
-    //     filter: 'all', // 过滤条件，可以根据需要调整
-    //     sortBy: 'createTime', // 排序字段，可以根据需要调整
-    //     isAsc: false // 排序顺序，false表示降序
+    //   // ====== Mock 数据(实际逻辑在下方被注释掉了，手动改回来即可) ======
+    //   const mockResponse = {
+    //     code: 1,
+    //     message: "success",
+    //     data: {
+    //       data: [
+    //         {
+    //           orderId: 1,
+    //           productId: 101,
+    //           createTime: "2025-06-01T10:00:00",
+    //           price: 99.99,
+    //           status: "PENDING",
+    //           payId: "PAY20250601100000",
+    //           payTime: null,
+    //           title: "示例商品 1",
+    //           primaryImageUrl: "http://example.com/image1.jpg"
+    //         },
+    //         {
+    //           orderId: 2,
+    //           productId: 102,
+    //           createTime: "2025-06-02T11:00:00",
+    //           price: 199.99,
+    //           status: "COMPLETED",
+    //           payId: "PAY20250602110000",
+    //           payTime: "2025-06-02T12:00:00",
+    //           title: "示例商品 2",
+    //           primaryImageUrl: "http://example.com/image2.jpg"
+    //         },
+    //         {
+    //           orderId: 3,
+    //           productId: 103,
+    //           createTime: "2025-06-03T12:00:00",
+    //           price: 299.99,
+    //           status: "SHIPPED",
+    //           payId: "PAY20250603120000",
+    //           payTime: "2025-06-03T13:00:00",
+    //           title: "示例商品 3",
+    //           primaryImageUrl: "http://example.com/image3.jpg"
+    //         }
+    //       ],
+    //       total: 100,
+    //       totalPage: 10
+    //     },
+    //     timestamp: 1754633400000
     //   };
     //
-    //   // 构建请求头中的用户信息
-    //   const userJson = JSON.stringify({
-    //     userId: this.userInfo.userId,
-    //     username: this.userInfo.username,
-    //     email: this.userInfo.email
-    //   });
-    //
-    //   // 发起GET请求获取订单
-    //   this.$http.get('/orders', {
-    //     params: queryDTO,
-    //     headers: {
-    //       'user-info': userJson
+    //   // 模拟网络延迟
+    //   setTimeout(() => {
+    //     console.log("Mock 数据加载完成:", mockResponse);
+    //     if (mockResponse.code === 1) {
+    //       this.orders = mockResponse.data.data || [];
+    //       this.ordersTotalPages = mockResponse.data.totalPage || 1;
+    //       this.ordersTotalItems = mockResponse.data.total || 0;
+    //     } else {
+    //       this.ordersError = mockResponse.message || "获取订单失败";
+    //       alert(this.ordersError);
     //     }
-    //   })
-    //       .then(response => {
-    //         console.log('获取订单响应:', response.data);
-    //         if (response.data.code === 1) {
-    //           // 根据后端返回的数据结构提取订单列表
-    //           const orderData = response.data.data;
-    //           this.orders = orderData.data || []; // 订单列表
-    //           this.ordersTotalPages = orderData.totalPage || 1; // 总页数
-    //           this.ordersTotalItems = orderData.total || 0; // 总记录数
-    //         } else {
-    //           // 处理错误信息
-    //           this.ordersError = response.data.message || '获取订单失败';
-    //           alert(this.ordersError);
-    //         }
-    //       })
-    //       .catch(error => {
-    //         console.error('获取订单错误:', error);
-    //         this.ordersError = error.response?.data?.message || '网络错误，请稍后重试';
-    //         alert(this.ordersError);
-    //       })
-    //       .finally(() => {
-    //         this.ordersLoading = false; // 无论成功失败，都结束加载状态
-    //       });
+    //     this.ordersLoading = false;
+    //   }, 1000);
     // },
+    fetchOrders() {
+      this.ordersLoading = true; // 设置加载状态为true
+      this.ordersError = null; // 清除之前的错误信息
+
+      const queryDTO = {
+        pageNo: this.ordersCurrentPage, // 当前页码
+        pageSize: this.ordersPageSize, // 每页显示数量
+        filter: 'all', // 过滤条件，可以根据需要调整
+        sortBy: 'createTime', // 排序字段，可以根据需要调整
+        isAsc: false // 排序顺序，false表示降序
+      };
+
+      // 构建请求头中的用户信息
+      const userJson = JSON.stringify({
+        userId: this.userInfo.userId,
+        username: this.userInfo.username,
+        email: this.userInfo.email
+      });
+
+      // 发起GET请求获取订单
+      this.$http.get('/orders', {
+        params: queryDTO,
+        headers: {
+          'user-info': userJson
+        }
+      })
+          .then(response => {
+            console.log('获取订单响应:', response.data);
+            if (response.data.code === 1) {
+              // 根据后端返回的数据结构提取订单列表
+              const orderData = response.data.data;
+              this.orders = orderData.data || []; // 订单列表
+              this.ordersTotalPages = orderData.totalPage || 1; // 总页数
+              this.ordersTotalItems = orderData.total || 0; // 总记录数
+            } else {
+              // 处理错误信息
+              this.ordersError = response.data.message || '获取订单失败';
+              alert(this.ordersError);
+            }
+          })
+          .catch(error => {
+            console.error('获取订单错误:', error);
+            this.ordersError = error.response?.data?.message || '网络错误，请稍后重试';
+            alert(this.ordersError);
+          })
+          .finally(() => {
+            this.ordersLoading = false; // 无论成功失败，都结束加载状态
+          });
+    },
 
     // 处理订单分页变化
     handleOrdersPageChange(page) {
@@ -624,7 +624,19 @@ export default {
     },
 
     saveAddress() {
-      this.$http.post('/address', this.tempAddress, {
+      // 1. 拼接完整地址（省份 + 城市 + 区县 + 详细地址）
+      const detail_address = `${this.tempAddress.province} ${this.tempAddress.city} ${this.tempAddress.district} ${this.tempAddress.detailAddress}`;
+
+      // 2. 构建最终发送给后端的数据对象
+      const addressData = {
+        recipient_name: this.tempAddress.receiverName,  // 收货人姓名（字段名改为 recipient_name）
+        phone: this.tempAddress.receiverPhone,          // 手机号（映射为 phone）
+        detail_address,                                 // 拼接后的完整地址
+        isDefault: this.tempAddress.isDefault ? 1 : 0,  // 默认地址（tinyint）
+      };
+
+      // 3. 发送请求到后端
+      this.$http.post('/address', addressData, {
         headers: {
           'user-info': JSON.stringify({
             userId: this.userInfo.userId,
@@ -639,7 +651,9 @@ export default {
               // 更新成功，更新本地地址列表
               const index = this.addressList.findIndex(item => item.addressId === this.currentAddressId);
               if (index !== -1) {
-                this.addressList[index] = { ...this.addressList[index], ...this.tempAddress };
+                // 注意：这里需要确保后端返回的地址数据也包含拼接后的 detail_address
+                // 如果后端返回的数据仍然包含 province/city/district，可能需要额外处理
+                this.addressList[index] = { ...this.addressList[index], ...addressData };
               }
               this.isEditingAddress = false;
               this.currentAddressId = null;
