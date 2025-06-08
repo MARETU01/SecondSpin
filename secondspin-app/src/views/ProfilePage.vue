@@ -1167,11 +1167,11 @@ export default {
               item.status === 'CANCELLED' ? 'cancelled' :
               item.status === 'REFUNDED' ? 'refunded' : 'unknown']">
               {{
-                        item.status === 'PENDING' ? '待付款' :
-                            item.status === 'SHIPPED' ? '已发货' :
-                                item.status === 'COMPLETED' ? '已完成' :
-                                    item.status === 'CANCELLED' ? '已取消' :
-                                        item.status === 'REFUNDED' ? '已退款' :
+                        item.status === 'pending' ? '待付款' :
+                            item.status === 'shipped' ? '已发货' :
+                                item.status === 'completed' ? '已完成' :
+                                    item.status === 'cancelled' ? '已取消' :
+                                        item.status === 'refunded' ? '已退款' :
                                             '未知状态'
                       }}
             </span>
@@ -1181,7 +1181,7 @@ export default {
                   <p v-if="item.payId">支付ID: {{ item.payId }}</p>
 
                   <button
-                      v-if="item.status === 'PENDING'"
+                      v-if="item.status === 'pending'"
                       class="pay-btn"
                       @click="handlePayment(item)">
                     <i class="icon">💳</i> 支付
