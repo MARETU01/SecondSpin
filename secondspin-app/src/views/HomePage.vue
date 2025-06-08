@@ -142,7 +142,7 @@ export default {
           // 使用首页商品接口
           response = await http.get('/products/home', {
             params: {
-              pageNum: this.pagination.currentPage,
+              pageNo: this.pagination.currentPage,
               pageSize: this.pagination.pageSize
             }
           })

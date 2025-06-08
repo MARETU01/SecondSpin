@@ -81,11 +81,7 @@ export default {
     fetchUnreadMessages() {
       if (!this.isLoggedIn) return
       
-      this.$http.get('/messages/unread', {
-        headers: {
-          'user-info': JSON.stringify(JSON.parse(localStorage.getItem('userInfo')))
-        }
-      }).then(response => {
+      this.$http.get('/messages/unread').then(response => {
         if (response.data.code === 1) {
           this.unreadCount = response.data.data || 0
         }
