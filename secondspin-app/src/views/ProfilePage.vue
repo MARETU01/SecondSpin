@@ -25,6 +25,7 @@ export default {
       activeTab: 'profile',
       tabs: [
         { id: 'profile', name: '个人信息' },
+        { id: 'address', name: '收货地址' },
         { id: 'favorites', name: '我的收藏' },
         { id: 'history', name: '浏览记录' },
         { id: 'orders', name: '我的订单' },
@@ -59,7 +60,24 @@ export default {
         verificationCode: ''
       },
       isSendingCode: false,
-      countdown: 0
+      countdown: 0,
+
+      // 订单相关数据
+      orders: [],
+      ordersLoading: false,
+      ordersError: null,
+      ordersCurrentPage: 1,
+      ordersPageSize: 10,
+      ordersTotalPages: 1,
+      ordersTotalItems: 0,
+
+      addressList: [],  // 收货地址列表
+      addressLoading: false,  // 收货地址加载状态
+      addressError: null,  // 收货地址错误信息
+      isEditingAddress: false,  // 收货地址编辑状态
+      tempAddress: {},  // 收货地址临时数据
+      currentAddressId: null  // 当前编辑的地址ID
+
     }
   },
   methods: {
@@ -237,6 +255,7 @@ export default {
     getTabIcon(tabId) {
       const icons = {
         profile: '👤',
+        address: '📍',  // 修改为收货地址图标
         favorites: '❤️',
         history: '📜',
         orders: '📦',
@@ -418,6 +437,252 @@ export default {
     handlePostsPageChange(page) {
       this.postsCurrentPage = page;
       this.fetchMyPosts();
+    },
+
+    // 获取订单列表
+    fetchOrders() {
+      this.ordersLoading = true;
+      this.ordersError = null;
+
+      // ====== Mock 数据(实际逻辑在下方被注释掉了，手动改回来即可) ======
+      const mockResponse = {
+        code: 1,
+        message: "success",
+        data: {
+          data: [
+            {
+              orderId: 1,
+              productId: 101,
+              createTime: "2025-06-01T10:00:00",
+              price: 99.99,
+              status: "PENDING",
+              payId: "PAY20250601100000",
+              payTime: null,
+              title: "示例商品 1",
+              primaryImageUrl: "http://example.com/image1.jpg"
+            },
+            {
+              orderId: 2,
+              productId: 102,
+              createTime: "2025-06-02T11:00:00",
+              price: 199.99,
+              status: "COMPLETED",
+              payId: "PAY20250602110000",
+              payTime: "2025-06-02T12:00:00",
+              title: "示例商品 2",
+              primaryImageUrl: "http://example.com/image2.jpg"
+            },
+            {
+              orderId: 3,
+              productId: 103,
+              createTime: "2025-06-03T12:00:00",
+              price: 299.99,
+              status: "SHIPPED",
+              payId: "PAY20250603120000",
+              payTime: "2025-06-03T13:00:00",
+              title: "示例商品 3",
+              primaryImageUrl: "http://example.com/image3.jpg"
+            }
+          ],
+          total: 100,
+          totalPage: 10
+        },
+        timestamp: 1754633400000
+      };
+
+      // 模拟网络延迟
+      setTimeout(() => {
+        console.log("Mock 数据加载完成:", mockResponse);
+        if (mockResponse.code === 1) {
+          this.orders = mockResponse.data.data || [];
+          this.ordersTotalPages = mockResponse.data.totalPage || 1;
+          this.ordersTotalItems = mockResponse.data.total || 0;
+        } else {
+          this.ordersError = mockResponse.message || "获取订单失败";
+          alert(this.ordersError);
+        }
+        this.ordersLoading = false;
+      }, 1000);
+    },
+    // fetchOrders() {
+    //   this.ordersLoading = true; // 设置加载状态为true
+    //   this.ordersError = null; // 清除之前的错误信息
+    //
+    //   const queryDTO = {
+    //     pageNo: this.ordersCurrentPage, // 当前页码
+    //     pageSize: this.ordersPageSize, // 每页显示数量
+    //     filter: 'all', // 过滤条件，可以根据需要调整
+    //     sortBy: 'createTime', // 排序字段，可以根据需要调整
+    //     isAsc: false // 排序顺序，false表示降序
+    //   };
+    //
+    //   // 构建请求头中的用户信息
+    //   const userJson = JSON.stringify({
+    //     userId: this.userInfo.userId,
+    //     username: this.userInfo.username,
+    //     email: this.userInfo.email
+    //   });
+    //
+    //   // 发起GET请求获取订单
+    //   this.$http.get('/orders', {
+    //     params: queryDTO,
+    //     headers: {
+    //       'user-info': userJson
+    //     }
+    //   })
+    //       .then(response => {
+    //         console.log('获取订单响应:', response.data);
+    //         if (response.data.code === 1) {
+    //           // 根据后端返回的数据结构提取订单列表
+    //           const orderData = response.data.data;
+    //           this.orders = orderData.data || []; // 订单列表
+    //           this.ordersTotalPages = orderData.totalPage || 1; // 总页数
+    //           this.ordersTotalItems = orderData.total || 0; // 总记录数
+    //         } else {
+    //           // 处理错误信息
+    //           this.ordersError = response.data.message || '获取订单失败';
+    //           alert(this.ordersError);
+    //         }
+    //       })
+    //       .catch(error => {
+    //         console.error('获取订单错误:', error);
+    //         this.ordersError = error.response?.data?.message || '网络错误，请稍后重试';
+    //         alert(this.ordersError);
+    //       })
+    //       .finally(() => {
+    //         this.ordersLoading = false; // 无论成功失败，都结束加载状态
+    //       });
+    // },
+
+    // 处理订单分页变化
+    handleOrdersPageChange(page) {
+      this.ordersCurrentPage = page; // 更新当前页码
+      this.fetchOrders(); // 重新获取订单列表
+    },
+
+    handlePayment(order) {
+      // 构建支付请求数据
+      const paymentRequest = {
+        out_trade_no: order.orderId.toString(), // 假设orderId可以作为交易号
+        subject: `购买商品: ${order.title}`, // 订单标题
+        total_amount: order.price // 订单价格
+      };
+
+      // 发送支付请求
+      this.$http.post('/payment/create', paymentRequest)
+          .then(response => {
+            // 直接从响应中获取数据，不需要检查code
+            const paymentUrl = response.data.paymentUrl;
+            window.location.href = paymentUrl; // 跳转到支付宝支付页面
+          })
+          .catch(error => {
+            console.error('支付错误:', error);
+            alert(error.response?.data?.message || '网络错误，请稍后重试');
+          });
+    },
+
+
+    fetchAddressList() {
+      this.addressLoading = true;
+      this.addressError = null;
+
+      this.$http.get('/address', {
+        headers: {
+          'user-info': JSON.stringify({
+            userId: this.userInfo.userId,
+            username: this.userInfo.username,
+            email: this.userInfo.email
+          })
+        }
+      })
+          .then(response => {
+            console.log('获取收货地址响应:', response.data);
+            if (response.data.code === 1) {
+              this.addressList = response.data.data || [];
+            } else {
+              this.addressError = response.data.message || '获取收货地址失败';
+            }
+          })
+          .catch(error => {
+            console.error('获取收货地址错误:', error);
+            this.addressError = error.response?.data?.message || '网络错误，请稍后重试';
+          })
+          .finally(() => {
+            this.addressLoading = false;
+          });
+    },
+
+    startEditingAddress(address) {
+      this.currentAddressId = address.addressId;
+      this.tempAddress = { ...address };
+      this.isEditingAddress = true;
+    },
+
+    cancelEditingAddress() {
+      this.isEditingAddress = false;
+      this.currentAddressId = null;
+    },
+
+    saveAddress() {
+      this.$http.post('/address', this.tempAddress, {
+        headers: {
+          'user-info': JSON.stringify({
+            userId: this.userInfo.userId,
+            username: this.userInfo.username,
+            email: this.userInfo.email
+          })
+        }
+      })
+          .then(response => {
+            console.log('保存收货地址响应:', response.data);
+            if (response.data.code === 1) {
+              // 更新成功，更新本地地址列表
+              const index = this.addressList.findIndex(item => item.addressId === this.currentAddressId);
+              if (index !== -1) {
+                this.addressList[index] = { ...this.addressList[index], ...this.tempAddress };
+              }
+              this.isEditingAddress = false;
+              this.currentAddressId = null;
+              alert('保存成功！');
+            } else {
+              alert(response.data.message || '保存失败，请重试');
+            }
+          })
+          .catch(error => {
+            console.error('保存收货地址错误:', error);
+            alert(error.response?.data?.message || '网络错误，请稍后重试');
+          });
+    },
+
+    removeAddress(addressId) {
+      if (confirm('确定要删除这个收货地址吗？')) {
+        this.$http.delete('/address', {
+          headers: {
+            'user-info': JSON.stringify({
+              userId: this.userInfo.userId,
+              username: this.userInfo.username,
+              email: this.userInfo.email
+            })
+          },
+          data: [addressId]  // 注意这里传递的是数组，因为后端接收的是List<Long> ids
+        })
+            .then(response => {
+              console.log('删除收货地址响应:', response.data);
+              if (response.data.code === 1) {
+                // 从列表中移除该地址
+                this.addressList = this.addressList.filter(
+                    item => item.addressId !== addressId
+                );
+                alert('删除成功');
+              } else {
+                alert(response.data.message || '删除失败');
+              }
+            })
+            .catch(error => {
+              console.error('删除收货地址错误:', error);
+              alert(error.response?.data?.message || '网络错误，请稍后重试');
+            });
+      }
     }
   },
   mounted() {
@@ -429,6 +694,13 @@ export default {
     } else if (this.activeTab === 'posts') {
       this.fetchMyPosts();
     }
+    else if (this.activeTab === 'address') {  // 新增收货地址标签页的数据加载
+      this.fetchAddressList();
+    }
+    // **确保这里调用了 fetchOrders()**
+    if (this.activeTab === 'orders') {
+      this.fetchOrders(); // ✅ 确保这一行存在
+    }
   },
   watch: {
     activeTab(newTab) {
@@ -438,9 +710,13 @@ export default {
         this.fetchViewHistory();
       } else if (newTab === 'posts') {
         this.fetchMyPosts();
+      } else if (newTab === 'address') {  // 新增收货地址标签页的监听
+        this.fetchAddressList();
+      } else if (newTab === 'orders') { // ✅ 确保这里监听了 orders 标签
+        this.fetchOrders(); // ✅ 确保这一行存在
       }
     }
-  }
+  },
 }
 </script>
 
@@ -569,6 +845,108 @@ export default {
               </div>
             </div>
           </template>
+        </div>
+
+        <!-- 收货地址 - 新增模块 -->
+        <div v-if="activeTab === 'address'" class="profile-section">
+          <div class="section-header">
+            <h3>收货地址</h3>
+            <button class="btn post-btn" @click="isEditingAddress = true; tempAddress = {};">
+              <i class="icon">➕</i> 添加新地址
+            </button>
+          </div>
+
+          <div v-if="addressLoading" class="loading-state">
+            <i class="loading-icon">⏳</i>
+            <p>加载中...</p>
+          </div>
+
+          <div v-else-if="addressError" class="error-state">
+            <i class="error-icon">❌</i>
+            <p>{{ addressError }}</p>
+            <button class="btn retry-btn" @click="fetchAddressList">重试</button>
+          </div>
+
+          <div v-else-if="addressList.length === 0" class="empty-state">
+            <i class="empty-icon">📦</i>
+            <p>暂无收货地址</p>
+            <button class="btn explore-btn" @click="isEditingAddress = true; tempAddress = {};">
+              <i class="icon">➕</i> 添加新地址
+            </button>
+          </div>
+
+          <template v-else>
+            <div class="address-grid">
+              <div v-for="address in addressList" :key="address.addressId" class="address-item">
+                <div class="address-info">
+                  <h4>{{ address.receiverName }}</h4>
+                  <p>{{ address.receiverPhone }}</p>
+                  <p>{{ address.province }} {{ address.city }} {{ address.district }} {{ address.detailAddress }}</p>
+                  <p v-if="address.isDefault" class="default-tag">默认地址</p>
+                </div>
+                <div class="address-actions">
+                  <button class="edit-btn" @click="startEditingAddress(address)">
+                    <i class="icon">✏️</i> 编辑
+                  </button>
+                  <button class="remove-btn" @click="removeAddress(address.addressId)">
+                    <i class="icon">❌</i> 删除
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- 收货地址表单弹窗 - 新增 -->
+        <div v-if="isEditingAddress" class="upload-dialog-overlay" @click="cancelEditingAddress">
+          <div class="upload-dialog" @click.stop>
+            <div class="upload-dialog-header">
+              <h3>{{ currentAddressId ? '编辑收货地址' : '添加收货地址' }}</h3>
+              <button class="close-btn" @click="cancelEditingAddress">&times;</button>
+            </div>
+            <div class="upload-dialog-content">
+              <form @submit.prevent="saveAddress" class="address-form">
+                <div class="form-group">
+                  <label>收货人姓名</label>
+                  <input type="text" v-model="tempAddress.receiverName" placeholder="请输入收货人姓名" required />
+                </div>
+                <div class="form-group">
+                  <label>手机号码</label>
+                  <input type="tel" v-model="tempAddress.receiverPhone" placeholder="请输入手机号码" required />
+                </div>
+                <div class="form-group">
+                  <label>省份</label>
+                  <input type="text" v-model="tempAddress.province" placeholder="请输入省份" required />
+                </div>
+                <div class="form-group">
+                  <label>城市</label>
+                  <input type="text" v-model="tempAddress.city" placeholder="请输入城市" required />
+                </div>
+                <div class="form-group">
+                  <label>区县</label>
+                  <input type="text" v-model="tempAddress.district" placeholder="请输入区县" required />
+                </div>
+                <div class="form-group">
+                  <label>详细地址</label>
+                  <input type="text" v-model="tempAddress.detailAddress" placeholder="请输入详细地址" required />
+                </div>
+                <div class="form-group">
+                  <label>设为默认地址</label>
+                  <div>
+                    <input type="checkbox" v-model="tempAddress.isDefault" />
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button type="button" class="btn cancel-btn" @click="cancelEditingAddress">
+                    <i class="icon">❌</i> 取消
+                  </button>
+                  <button type="submit" class="btn save-btn">
+                    <i class="icon">💾</i> 保存
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
 
         <!-- 我的收藏 -->
@@ -712,13 +1090,94 @@ export default {
         <div v-if="activeTab === 'orders'" class="profile-section">
           <div class="section-header">
             <h3>我的订单</h3>
+            <!-- 如果需要添加创建订单的按钮，可以在这里添加 -->
+            <!-- <button class="btn post-btn" @click="createOrder">
+              <i class="icon">🛒</i> 创建订单
+            </button> -->
           </div>
-          
-          <div class="empty-state">
+
+          <div v-if="ordersLoading" class="loading-state">
+            <i class="loading-icon">⏳</i>
+            <p>加载中...</p>
+          </div>
+
+          <div v-else-if="orders.length === 0" class="empty-state">
             <i class="empty-icon">📦</i>
             <p>暂无订单记录</p>
             <button class="btn explore-btn" @click="goToHome">去逛逛</button>
           </div>
+
+          <template v-else>
+            <div class="orders-grid">
+              <div v-for="item in orders" :key="item.orderId" class="order-item">
+                <div class="image-container">
+                  <img
+                      v-if="item.primaryImageUrl"
+                      :src="item.primaryImageUrl"
+                      :alt="item.title"
+                      class="product-image"
+                  />
+                  <div v-else class="no-image">
+                    <i class="icon">🖼️</i>
+                    <span>暂无图片</span>
+                  </div>
+                </div>
+                <div class="order-info">
+                  <h4>订单号: {{ item.orderId }}</h4>
+                  <p>商品: {{ item.title }}</p>
+                  <p>价格: ¥{{ item.price.toFixed(2) }}</p>
+                  <p>状态:
+                    <span :class="['status-badge',
+              item.status === 'PENDING' ? 'pending' :
+              item.status === 'SHIPPED' ? 'shipped' :
+              item.status === 'COMPLETED' ? 'completed' :
+              item.status === 'CANCELLED' ? 'cancelled' :
+              item.status === 'REFUNDED' ? 'refunded' : 'unknown']">
+              {{
+                        item.status === 'PENDING' ? '待付款' :
+                            item.status === 'SHIPPED' ? '已发货' :
+                                item.status === 'COMPLETED' ? '已完成' :
+                                    item.status === 'CANCELLED' ? '已取消' :
+                                        item.status === 'REFUNDED' ? '已退款' :
+                                            '未知状态'
+                      }}
+            </span>
+                  </p>
+                  <p>创建时间: {{ formatDate(item.createTime) }}</p>
+                  <p v-if="item.payTime">支付时间: {{ formatDate(item.payTime) }}</p>
+                  <p v-if="item.payId">支付ID: {{ item.payId }}</p>
+
+                  <button
+                      v-if="item.status === 'PENDING'"
+                      class="pay-btn"
+                      @click="handlePayment(item)">
+                    <i class="icon">💳</i> 支付
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 分页组件 -->
+            <div class="pagination">
+              <button
+                  class="page-btn"
+                  :disabled="ordersCurrentPage === 1"
+                  @click="handleOrdersPageChange(ordersCurrentPage - 1)"
+              >
+                上一页
+              </button>
+              <span class="page-info">
+        第 {{ ordersCurrentPage }} 页 / 共 {{ ordersTotalPages }} 页
+      </span>
+              <button
+                  class="page-btn"
+                  :disabled="ordersCurrentPage === ordersTotalPages"
+                  @click="handleOrdersPageChange(ordersCurrentPage + 1)"
+              >
+                下一页
+              </button>
+            </div>
+          </template>
         </div>
 
         <!-- 我的发布 -->
@@ -1787,5 +2246,224 @@ export default {
 .send-code-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+/* 在 <style scoped> 中添加以下内容 */
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status-badge.pending {
+  background-color: #FFC107; /* 黄色 */
+  color: #333;
+}
+
+.status-badge.shipped {
+  background-color: #2196F3; /* 蓝色 */
+  color: white;
+}
+
+.status-badge.completed {
+  background-color: #4CAF50; /* 绿色 */
+  color: white;
+}
+
+.status-badge.cancelled {
+  background-color: #9E9E9E; /* 灰色 */
+  color: white;
+}
+
+.status-badge.refunded {
+  background-color: #FF5722; /* 橙色 */
+  color: white;
+}
+
+.status-badge.unknown {
+  background-color: #F44336; /* 红色 */
+  color: white;
+}
+
+.orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.order-item {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+  border: 1px solid #eee; /* 添加边框 */
+  padding: 15px; /* 添加内边距 */
+}
+
+.order-item:hover {
+  transform: translateY(-5px);
+}
+
+/* 新增收货地址相关样式 */
+.address-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.address-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.address-item:hover {
+  transform: translateY(-5px);
+}
+
+.address-info h4 {
+  margin: 0 0 5px;
+  color: #333;
+  font-size: 16px;
+}
+
+.address-info p {
+  margin: 5px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.default-tag {
+  background-color: #4CAF50;
+  color: white;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+
+.address-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-btn {
+  background: #ff5722;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.remove-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* 新增收货地址相关样式 */
+.address-form {
+  max-width: 100%;
+}
+
+.address-form .form-group {
+  margin-bottom: 15px;
+}
+
+.address-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: #666;
+  font-weight: bold;
+}
+
+.address-form input[type="text"],
+.address-form input[type="tel"] {
+  width: 100%;
+  padding: 7px;
+  border: 2px solid #eee;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.address-form input[type="text"]:focus,
+.address-form input[type="tel"]:focus {
+  border-color: #ff5722;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255,87,34,0.1);
+}
+
+.address-form label input[type="checkbox"] {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* 为上下布局的复选框添加一些间距 */
+.form-group div input[type="checkbox"] {
+  margin: 5px 0;
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.cancel-btn {
+  background: #9e9e9e;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cancel-btn:hover {
+  background: #757575;
+}
+
+.save-btn {
+  background: #ff5722;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.save-btn:hover {
+  background: #f4511e;
 }
 </style>
