@@ -13,7 +13,7 @@
           </button>
           <div v-else class="logged-in-section">
             <button class="btn message-btn" @click="$router.push('/messages')">
-              <i class="icon">💬</i>
+              <i class="icon">💬 Message</i>
             </button>
             <button class="btn publish-btn" @click="$router.push('/create')">
               <i class="icon">+</i> 发布商品
@@ -34,7 +34,7 @@ export default {
   data() {
     return {
       isLoggedIn: false,
-      userAvatar: '/default.png'
+      userAvatar: `/public/images/avatar/default.png`
     }
   },
   created() {

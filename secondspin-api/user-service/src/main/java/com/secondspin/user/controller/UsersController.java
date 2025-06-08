@@ -128,7 +128,7 @@ public class UsersController {
         }
         try {
             Users user = jacksonObjectMapper.readValue(userJson, Users.class);
-            return Result.success(user);
+            return Result.success(usersService.getById(user.getUserId()).setPassword(null));
         } catch (Exception e) {
             return Result.failure(e.getMessage());
         }
