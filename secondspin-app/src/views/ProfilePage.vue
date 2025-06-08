@@ -614,25 +614,44 @@ export default {
 
     startEditingAddress(address) {
       this.currentAddressId = address.addressId;
-      this.tempAddress = { ...address };
+      this.tempAddress = {
+        ...address,
+        province: address.province || '', // 确保字段是字符串
+        city: address.city || '',
+        district: address.district || '',
+        detailAddress: address.detailAddress || '',
+        isDefault: address.isDefault || false,
+      };
       this.isEditingAddress = true;
     },
 
     cancelEditingAddress() {
       this.isEditingAddress = false;
       this.currentAddressId = null;
+      this.tempAddress = {}; // 清空 tempAddress
     },
+
+    // startEditingAddress(address) {
+    //   this.currentAddressId = address.addressId;
+    //   this.tempAddress = { ...address };
+    //   this.isEditingAddress = true;
+    // },
+    //
+    // cancelEditingAddress() {
+    //   this.isEditingAddress = false;
+    //   this.currentAddressId = null;
+    // },
 
     saveAddress() {
       // 1. 拼接完整地址（省份 + 城市 + 区县 + 详细地址）
-      const detail_address = `${this.tempAddress.province} ${this.tempAddress.city} ${this.tempAddress.district} ${this.tempAddress.detailAddress}`;
+      const detailAddress = `${this.tempAddress.province} ${this.tempAddress.city} ${this.tempAddress.district} ${this.tempAddress.detailAddress}`;
 
       // 2. 构建最终发送给后端的数据对象
       const addressData = {
-        recipient_name: this.tempAddress.receiverName,  // 收货人姓名（字段名改为 recipient_name）
+        recipientName: this.tempAddress.receiverName,  // 收货人姓名（字段名改为 recipient_name）
         phone: this.tempAddress.receiverPhone,          // 手机号（映射为 phone）
-        detail_address,                                 // 拼接后的完整地址
-        isDefault: this.tempAddress.isDefault ? 1 : 0,  // 默认地址（tinyint）
+        detailAddress,                                // 拼接后的完整地址
+        defaultAddress: this.tempAddress.isDefault ? 1 : 0,  // 默认地址（tinyint）
       };
 
       // 3. 发送请求到后端
