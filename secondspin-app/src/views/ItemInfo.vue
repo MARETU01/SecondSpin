@@ -146,8 +146,8 @@ export default {
       imageUrlPrefix: '/images/products/',
       // 头像URL前缀
       avatarUrlPrefix: '/images/avatar/',
-      /// 默认图片URL
-      defaultProductImage: '/images/products/default.png', // 更新为指定的默认图片路径
+      // 默认图片URL
+      defaultProductImage: '/images/default-product.jpg',
       defaultAvatarImage: '/images/avatar/default.png'
     };
   },
@@ -169,19 +169,15 @@ export default {
 
     // 处理后的图片URL数组
     imageUrls() {
-      if (!this.product || !this.product.imageUrls || this.product.imageUrls.length === 0) {
-        // 如果没有图片，返回默认图片
-        return [this.defaultProductImage];
-      }
+      if (!this.product || !this.product.imageUrls) return [];
 
       // 确保imageUrls是数组
       if (typeof this.product.imageUrls === 'string') {
         try {
-          const urls = JSON.parse(this.product.imageUrls);
-          return urls.length > 0 ? urls : [this.defaultProductImage];
+          return JSON.parse(this.product.imageUrls);
         } catch (e) {
-          // 如果解析失败或为空，返回默认图片
-          return [this.defaultProductImage];
+          // 如果解析失败，尝试作为单个URL处理
+          return [this.product.imageUrls];
         }
       }
 
