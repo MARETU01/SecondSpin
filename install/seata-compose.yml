@@ -1,0 +1,19 @@
+services:
+  seata:
+    image: seataio/seata-server:1.5.2
+    container_name: seata
+    ports:
+      - "8091:8091"
+      - "7091:7091"
+    environment:
+      - SEATA_IP=seata
+    volumes:
+      - ./seata/config:/seata-server/resources
+    networks:
+      - secondspin_secondspin_network
+    privileged: true
+    restart: unless-stopped
+
+networks:
+  secondspin_secondspin_network:
+    external: true

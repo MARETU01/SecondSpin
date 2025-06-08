@@ -7,13 +7,13 @@ feign:
 
 secondspin:
   mysql:
-    host: 39.108.112.191
+    host: ${YOUR_DOCKER_SERVER_IP:39.108.112.191}
     port: 3306
     database: secondspin
     username: root
     password: secondspin123456
   redis:
-    host: 39.108.112.191
+    host: ${YOUR_DOCKER_SERVER_IP:39.108.112.191}
     port: 6379
     password: 123456
     db: 0
