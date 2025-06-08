@@ -7,9 +7,12 @@ import com.secondspin.common.dto.PageDTO;
 import com.secondspin.common.dto.QueryDTO;
 import com.secondspin.common.utils.Result;
 import com.secondspin.order.dto.OrderListDTO;
+import com.secondspin.order.enums.OrderStatus;
 import com.secondspin.order.pojo.Orders;
 import com.secondspin.order.service.IOrdersService;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/orders")
@@ -54,5 +57,16 @@ public class OrderController {
         } catch (Exception e) {
             return Result.failure(e.getMessage());
         }
+    }
+
+    @PutMapping("/{id}")
+    public Boolean payOrder(@PathVariable Integer id, Long alipayTradeNo, LocalDateTime paymentTime) {
+        return ordersService
+                .lambdaUpdate()
+                .eq(Orders::getOrderId, id)
+                .set(Orders::getStatus, OrderStatus.SHIPPED)
+                .set(Orders::getPayId, alipayTradeNo)
+                .set(Orders::getPayTime, paymentTime)
+                .update();
     }
 }

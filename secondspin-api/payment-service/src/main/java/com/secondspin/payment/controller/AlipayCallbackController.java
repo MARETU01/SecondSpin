@@ -1,12 +1,15 @@
 package com.secondspin.payment.controller;
 
 import com.alipay.api.internal.util.AlipaySignature;
+import com.secondspin.api.client.OrderClient;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,7 +18,13 @@ import java.util.Map;
 @Slf4j
 public class AlipayCallbackController {
 
+    private final OrderClient orderClient;
+
     private static final String ALIPAY_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxJprgZq2ep8eYRGYCPjHNDOeskYIwmfWjiJ3cK8RoAhE/cvto2PR41WKXLKM5Sx09VzCHwyCGBHUtGLymPrFvs7L4Ab6h+ozbclWZ2W6N56anrNE3+Rci0HBdFRCAfMjDxJe/zKSh6KYFmYCtMOaLECXYtM9/su2pYYXF6srcQBubvRVasKgdvMLYxSR6AS18iPdIKp8H/XVV+vZE3SD3nwNVKWhxtsKkK1ICf+/VlqWp7cCJySgOyxamYnSJX11dG5k0IVEULC2dTEHtnGa5rEqxrI4ykjxITEz1byyp5GTiBIxAu5Or+pmTFpvpJwh/b2y5kjjALwgp+lXrZhonQIDAQAB";
+
+    public AlipayCallbackController(OrderClient orderClient) {
+        this.orderClient = orderClient;
+    }
 
     @PostMapping("/callback")
     public String payNotify(HttpServletRequest request) {
@@ -48,6 +57,9 @@ public class AlipayCallbackController {
                     log.info("支付回调，支付回调，更新订单 {}", tradeNo);
 
                     // orderService.changeOrderPaySuccess(tradeNo);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    LocalDateTime paymentTime = LocalDateTime.parse(gmtPayment, formatter);
+                    orderClient.payOrder(Integer.valueOf(tradeNo), Long.valueOf(alipayTradeNo), paymentTime);
                 }
             }
 

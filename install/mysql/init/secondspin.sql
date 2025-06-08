@@ -214,7 +214,7 @@ SET favorite_count = favorite_count - 1
 WHERE product_id = OLD.product_id;
 
 
-INSERT INTO users(username, real_name, password, email, phone) VALUES("root", "root", "$2a$10$CwoZwR.63t7PS5OGbriymedJVJJDAJyHWkn1QilAEapjdAQRvuaca", "2636064351@qq.com", "11012345678");
+INSERT INTO users(username, real_name, password, email, phone) VALUES("root", "root", "$2a$10$CwoZwR.63t7PS5OGbriymedJVJJDAJyHWkn1QilAEapjdAQRvuaca", "example@example.com", "11012345678");
 
 INSERT INTO categories (name, description, icon_url) VALUES
 ('Electronics', 'Used phones, computers, tablets, cameras and other electronic devices', 'electronics.png'),
