@@ -30,7 +30,7 @@
           <div class="item-images">
             <div class="main-image">
               <img
-                  :src="getImageUrl(mainImageUrl)"
+                  :src="getImageUrl(imageUrls[currentImage])"
                   alt="商品主图"
                   class="img-fluid"
                   @error="handleImageError($event)"
@@ -41,12 +41,12 @@
                   v-for="(url, index) in imageUrls"
                   :key="index"
                   class="thumbnail"
-                  @click="currentImage = index"
+                  @click="changeMainImage(index)"
               >
                 <img
                     :src="getImageUrl(url)"
                     alt="商品缩略图"
-                    :class="{ active: currentImage === index }"
+                    :class="{ 'border-2 border-primary': currentImage === index }"
                     @error="handleImageError($event)"
                 >
               </div>
@@ -73,7 +73,7 @@
             <div class="category-info">
               <span class="category-label">分类:</span>
               <span class="category-name">{{ product.categoryName }}</span>
-              <img :src="getImageUrl(product.categoryIconUrl)" alt="分类图标" class="category-icon">
+
             </div>
 
             <div class="seller-info">
@@ -98,9 +98,7 @@
                 <i class="fa" :class="product.ifFavorite ? 'fa-heart' : 'fa-heart-o'"></i>
                 {{ product.ifFavorite ? '已收藏' : '收藏' }}
               </button>
-              <button class="btn-chat">
-                <i class="fa fa-comments"></i> 立即咨询
-              </button>
+
               <button class="btn-buy" :disabled="product.status !== 'available'">
                 <i class="fa fa-shopping-cart"></i> 立即购买
               </button>
@@ -112,6 +110,8 @@
           <h3>商品描述</h3>
           <p>{{ product.description || '暂无商品描述' }}</p>
         </div>
+
+
       </div>
     </div>
 
@@ -207,10 +207,13 @@ export default {
       } finally {
         this.loading = false;
       }
+
     },
+
 
     // 格式化日期显示
     formatDate(dateString) {
+
       if (!dateString) return '';
 
       const date = new Date(dateString);
@@ -223,10 +226,44 @@ export default {
 
     // 切换收藏状态
     toggleFavorite() {
-      // 这里应该调用API更新收藏状态
-      // 目前只是模拟状态变化
-      if (this.product) {
-        this.product.ifFavorite = !this.product.ifFavorite;
+      if (this.product){
+        this.$http.delete('/favorites', {
+          params: {
+            ids: this.id
+          }
+        })
+            .then(response => {
+              console.log('取消收藏响应:', response.data);
+              if (response.data.code === 1) {
+                // 从列表中移除该商品
+                this.product.ifFavorite = !this.product.ifFavorite;
+                alert('取消收藏成功');
+              } else {
+                alert(response.data.message || '取消收藏失败');
+              }
+            })
+            .catch(error => {
+              console.error('取消收藏错误:', error);
+              alert(error.response?.data?.message || '网络错误，请稍后重试');
+            });
+      }else{
+        this.$http.post('/favorites', {
+          productId: this.id
+        })
+            .then(response => {
+              console.log('取消收藏响应:', response.data);
+              if (response.data.code === 1) {
+                // 从列表中移除该商品
+                this.product.ifFavorite = !this.product.ifFavorite;
+                alert('取消收藏成功');
+              } else {
+                alert(response.data.message || '取消收藏失败');
+              }
+            })
+            .catch(error => {
+              console.error('取消收藏错误:', error);
+              alert(error.response?.data?.message || '网络错误，请稍后重试');
+            });
       }
     },
 
@@ -261,6 +298,11 @@ export default {
     handleAvatarError(event) {
       // 头像加载失败时显示默认头像
       event.target.src = this.defaultAvatarImage;
+    },
+
+    // 更改主图显示
+    changeMainImage(index) {
+      this.currentImage = index;
     }
   }
 };
@@ -596,6 +638,14 @@ export default {
   font-size: 16px;
   line-height: 1.6;
   color: #424242;
+}
+
+.border-2 {
+  border-width: 2px !important;
+}
+
+.border-primary {
+  border-color: #2196f3 !important;
 }
 </style>
 
