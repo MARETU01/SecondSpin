@@ -19,7 +19,7 @@
           v-for="product in products" 
           :key="product.productId"
           :product="product"
-          @click="viewProductDetail(product.productId)"
+          @click="$router.push(`/iteminfo/${product.productId}`)"
         />
       </div>
 
