@@ -55,4 +55,18 @@ public class MessagesController {
             return Result.failure(e.getMessage());
         }
     }
+
+    @PostMapping
+    public Result<Messages> sendMessage(@RequestHeader("user-info") String userJson,
+                                        @RequestBody Messages message) throws JsonProcessingException {
+        JwtUser user = jacksonObjectMapper.readValue(userJson, JwtUser.class);
+        try {
+            message.setSenderId(user.getUserId())
+                    .setContent("Hello!");
+            Messages sentMessage = messagesService.sendMessage(message);
+            return Result.success(sentMessage);
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
 }
