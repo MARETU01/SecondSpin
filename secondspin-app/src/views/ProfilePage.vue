@@ -1,6 +1,12 @@
 <script>
+import Header from '@/components/AppHeader.vue'
+import Footer from '@/components/AppFooter.vue'
 
 export default {
+  components: {
+    Header,
+    Footer
+  },
   props: {
     id: {
       type: [String, Number],
@@ -11,7 +17,7 @@ export default {
     return {
       userInfo: {
         userId: 1,
-        username: '测试用户',
+        username: 'Test users',
         email: 'test@example.com',
         registrationDate: '2024-03-20 10:00:00',
         accountStatus: 'ACTIVE',
@@ -24,13 +30,13 @@ export default {
       showUploadDialog: false,
       activeTab: 'profile',
       tabs: [
-        { id: 'profile', name: '个人信息' },
-        { id: 'address', name: '收货地址' },
-        { id: 'favorites', name: '我的收藏' },
-        { id: 'history', name: '浏览记录' },
-        { id: 'orders', name: '我的订单' },
-        { id: 'posts', name: '我的发布' },
-        { id: 'security', name: '修改密码' }
+        { id: 'profile', name: 'Personal Information' },
+        { id: 'address', name: 'Address of delivery' },
+        { id: 'favorites', name: 'My Collection' },
+        { id: 'history', name: 'Browsing history' },
+        { id: 'orders', name: 'My order' },
+        { id: 'posts', name: 'My Release' },
+        { id: 'security', name: 'Change your password' }
       ],
       favoriteProducts: [],
       loading: false,
@@ -84,7 +90,7 @@ export default {
     fetchUserInfo() {
       this.$http.get(`/users/info/${this.id}`)
         .then(response => {
-          console.log('获取用户信息响应:', response.data)
+          console.log('Get the user information response:', response.data)
           if (response.data.code === 1) {
             // 更新用户信息
             this.userInfo = {
@@ -98,12 +104,12 @@ export default {
               this.isCurrentUserProfile = false
             }
           } else {
-            alert(response.data.message || '获取用户信息失败')
+            alert(response.data.message || 'Failed to retrieve user information')
           }
         })
         .catch(error => {
-          console.error('获取用户信息错误:', error)
-          alert(error.response?.data?.message || '网络错误，请稍后重试')
+          console.error('Error getting user information:', error)
+          alert(error.response?.data?.message || 'Network error, please try again later')
         })
     },
     handleAvatarUpload(event) {
@@ -154,21 +160,21 @@ export default {
         }
       })
         .then(response => {
-          console.log('更新用户信息响应:', response.data);
+          console.log('Update the user information response:', response.data);
           if (response.data.code === 1) {
             // 更新成功，更新本地用户信息
             this.userInfo.realName = this.tempUserInfo.realName;
             this.userInfo.phone = this.tempUserInfo.phone;
             this.isEditing = false;
             localStorage.setItem('userInfo', JSON.stringify(this.userInfo));
-            alert('保存成功！');
+            alert('Saved successfully!');
           } else {
-            alert(response.data.message || '保存失败，请重试');
+            alert(response.data.message || 'Failed to save, please try again');
           }
         })
         .catch(error => {
-          console.error('更新用户信息错误:', error);
-          alert(error.response?.data?.message || '网络错误，请稍后重试');
+          console.error('Error updating user information:', error);
+          alert(error.response?.data?.message || 'Network error, please try again later');
         });
     },
     sendVerificationCode() {
@@ -178,17 +184,17 @@ export default {
         { password: this.passwordForm.oldPassword }
       )
         .then(response => {
-          console.log('发送验证码响应:', response.data);
+          console.log('Send the CAPTCHA response:', response.data);
           if (response.data.code === 1) {
-            alert('验证码已发送到您的邮箱');
+            alert('The verification code has been sent to your email');
             this.startCountdown();
           } else {
-            alert(response.data.message || '发送验证码失败');
+            alert(response.data.message || 'Failed to send the CAPTCHA');
           }
         })
         .catch(error => {
-          console.error('发送验证码错误:', error);
-          alert(error.response?.data?.message || '网络错误，请稍后重试');
+          console.error('Error sending CAPtCHA:', error);
+          alert(error.response?.data?.message || 'Network error, please try again later');
         });
     },
     startCountdown() {
@@ -205,7 +211,7 @@ export default {
     changePassword() {
       // 验证新密码和确认密码是否一致
       if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
-        alert('新密码和确认密码不一致');
+        alert('The new password and the confirmation password do not match');
         return;
       }
 
@@ -218,9 +224,9 @@ export default {
         }
       )
         .then(response => {
-          console.log('修改密码响应:', response.data);
+          console.log('Change Password response:', response.data);
           if (response.data.code === 1) {
-            alert('密码修改成功');
+            alert('Password changed successfully');
             // 清空表单
             this.passwordForm = {
               oldPassword: '',
@@ -233,12 +239,12 @@ export default {
             localStorage.removeItem('userInfo')
             this.$router.push('/login')
           } else {
-            alert(response.data.message || '修改密码失败');
+            alert(response.data.message || 'Failed to change password');
           }
         })
         .catch(error => {
-          console.error('修改密码错误:', error);
-          alert(error.response?.data?.message || '网络错误，请稍后重试');
+          console.error('Wrong password change:', error);
+          alert(error.response?.data?.message || 'Network error, please try again later');
         });
     },
     formatDate(dateString) {
@@ -255,7 +261,7 @@ export default {
     getTabIcon(tabId) {
       const icons = {
         profile: '👤',
-        address: '📍',  // 修改为收货地址图标
+        address: '📍',  
         favorites: '❤️',
         history: '📜',
         orders: '📦',
@@ -283,19 +289,19 @@ export default {
         }
       })
         .then(response => {
-          console.log('获取收藏商品响应:', response.data);
+          console.log('Get the favorite item response:', response.data);
           if (response.data.code === 1) {
             this.favoriteProducts = response.data.data.data || [];
             this.totalPages = response.data.data.totalPage;
             this.totalItems = response.data.data.total;
-            console.log('收藏商品列表:', this.favoriteProducts);
+            console.log('List of Favorite products:', this.favoriteProducts);
           } else {
-            this.error = response.data.message || '获取收藏商品失败';
+            this.error = response.data.message || 'Failed to get favorites';
           }
         })
         .catch(error => {
-          console.error('获取收藏商品错误:', error);
-          this.error = error.response?.data?.message || '网络错误，请稍后重试';
+          console.error('Error retrieving favorites:', error);
+          this.error = error.response?.data?.message || 'Network error, please try again later';
         })
         .finally(() => {
           this.loading = false;
@@ -316,20 +322,20 @@ export default {
         }
       })
         .then(response => {
-          console.log('取消收藏响应:', response.data);
+          console.log('Unfavorite response:', response.data);
           if (response.data.code === 1) {
             // 从列表中移除该商品
             this.favoriteProducts = this.favoriteProducts.filter(
               item => item.favoriteId !== favoriteId
             );
-            alert('取消收藏成功');
+            alert('Cancel collection successfully');
           } else {
-            alert(response.data.message || '取消收藏失败');
+            alert(response.data.message || 'Failure to cancel favorites');
           }
         })
         .catch(error => {
-          console.error('取消收藏错误:', error);
-          alert(error.response?.data?.message || '网络错误，请稍后重试');
+          console.error('Unbookmark error:', error);
+          alert(error.response?.data?.message || 'Network error, please try again later');
         });
     },
     fetchViewHistory() {
@@ -343,19 +349,19 @@ export default {
         }
       })
         .then(response => {
-          console.log('获取浏览记录响应:', response.data);
+          console.log('Get the browsing history response:', response.data);
           if (response.data.code === 1) {
             this.viewHistory = response.data.data.data || [];
             this.historyTotalPages = response.data.data.totalPage;
             this.historyTotalItems = response.data.data.total;
-            console.log('浏览记录列表:', this.viewHistory);
+            console.log('Browsing history list:', this.viewHistory);
           } else {
-            this.historyError = response.data.message || '获取浏览记录失败';
+            this.historyError = response.data.message || 'Failed to get browsing history';
           }
         })
         .catch(error => {
-          console.error('获取浏览记录错误:', error);
-          this.historyError = error.response?.data?.message || '网络错误，请稍后重试';
+          console.error('Get the browsing log error:', error);
+          this.historyError = error.response?.data?.message || 'Network error, please try again later';
         })
         .finally(() => {
           this.historyLoading = false;
@@ -372,36 +378,36 @@ export default {
         }
       })
         .then(response => {
-          console.log('删除浏览记录响应:', response.data);
+          console.log('Delete the browsing history response:', response.data);
           if (response.data.code === 1) {
             this.viewHistory = this.viewHistory.filter(
               item => item.historyId !== historyId
             );
-            alert('删除成功');
+            alert('Delete successfully');
           } else {
-            alert(response.data.message || '删除失败');
+            alert(response.data.message || 'Deletion failure');
           }
         })
         .catch(error => {
-          console.error('删除浏览记录错误:', error);
-          alert(error.response?.data?.message || '网络错误，请稍后重试');
+          console.error('Delete browsing history error:', error);
+          alert(error.response?.data?.message || 'Network error, please try again later');
         });
     },
     clearAllHistory() {
-      if (confirm('确定要清空所有浏览记录吗？')) {
+      if (confirm('Are you sure you want to clear all your browsing history?')) {
         this.$http.delete('/history/all')
           .then(response => {
-            console.log('清空浏览记录响应:', response.data);
+            console.log('Clear browsing history response:', response.data);
             if (response.data.code === 1) {
               this.viewHistory = [];
-              alert('清空成功');
+              alert('Empty successfully');
             } else {
-              alert(response.data.message || '清空失败');
+              alert(response.data.message || 'Failure to empty');
             }
           })
           .catch(error => {
-            console.error('清空浏览记录错误:', error);
-            alert(error.response?.data?.message || '网络错误，请稍后重试');
+            console.error('Clear browsing record error:', error);
+            alert(error.response?.data?.message || 'Network error, please try again later');
           });
       }
     },
@@ -416,19 +422,19 @@ export default {
         }
       })
         .then(response => {
-          console.log('获取个人发布响应:', response.data);
+          console.log('Get individual release responses:', response.data);
           if (response.data.code === 1) {
             this.myPosts = response.data.data.data || [];
             this.postsTotalPages = response.data.data.totalPage;
             this.postsTotalItems = response.data.data.total;
-            console.log('个人发布列表:', this.myPosts);
+            console.log('Personal Posting list:', this.myPosts);
           } else {
-            this.postsError = response.data.message || '获取个人发布失败';
+            this.postsError = response.data.message || 'Failed to obtain a personal release';
           }
         })
         .catch(error => {
-          console.error('获取个人发布错误:', error);
-          this.postsError = error.response?.data?.message || '网络错误，请稍后重试';
+          console.error('Get personal release errors:', error);
+          this.postsError = error.response?.data?.message || 'Network error, please try again later';
         })
         .finally(() => {
           this.postsLoading = false;
@@ -438,72 +444,6 @@ export default {
       this.postsCurrentPage = page;
       this.fetchMyPosts();
     },
-
-    // 获取订单列表
-    // fetchOrders() {
-    //   this.ordersLoading = true;
-    //   this.ordersError = null;
-    //
-    //   // ====== Mock 数据(实际逻辑在下方被注释掉了，手动改回来即可) ======
-    //   const mockResponse = {
-    //     code: 1,
-    //     message: "success",
-    //     data: {
-    //       data: [
-    //         {
-    //           orderId: 1,
-    //           productId: 101,
-    //           createTime: "2025-06-01T10:00:00",
-    //           price: 99.99,
-    //           status: "PENDING",
-    //           payId: "PAY20250601100000",
-    //           payTime: null,
-    //           title: "示例商品 1",
-    //           primaryImageUrl: "http://example.com/image1.jpg"
-    //         },
-    //         {
-    //           orderId: 2,
-    //           productId: 102,
-    //           createTime: "2025-06-02T11:00:00",
-    //           price: 199.99,
-    //           status: "COMPLETED",
-    //           payId: "PAY20250602110000",
-    //           payTime: "2025-06-02T12:00:00",
-    //           title: "示例商品 2",
-    //           primaryImageUrl: "http://example.com/image2.jpg"
-    //         },
-    //         {
-    //           orderId: 3,
-    //           productId: 103,
-    //           createTime: "2025-06-03T12:00:00",
-    //           price: 299.99,
-    //           status: "SHIPPED",
-    //           payId: "PAY20250603120000",
-    //           payTime: "2025-06-03T13:00:00",
-    //           title: "示例商品 3",
-    //           primaryImageUrl: "http://example.com/image3.jpg"
-    //         }
-    //       ],
-    //       total: 100,
-    //       totalPage: 10
-    //     },
-    //     timestamp: 1754633400000
-    //   };
-    //
-    //   // 模拟网络延迟
-    //   setTimeout(() => {
-    //     console.log("Mock 数据加载完成:", mockResponse);
-    //     if (mockResponse.code === 1) {
-    //       this.orders = mockResponse.data.data || [];
-    //       this.ordersTotalPages = mockResponse.data.totalPage || 1;
-    //       this.ordersTotalItems = mockResponse.data.total || 0;
-    //     } else {
-    //       this.ordersError = mockResponse.message || "获取订单失败";
-    //       alert(this.ordersError);
-    //     }
-    //     this.ordersLoading = false;
-    //   }, 1000);
-    // },
     fetchOrders() {
       this.ordersLoading = true; // 设置加载状态为true
       this.ordersError = null; // 清除之前的错误信息
@@ -531,7 +471,7 @@ export default {
         }
       })
           .then(response => {
-            console.log('获取订单响应:', response.data);
+            console.log('Getting the order response:', response.data);
             if (response.data.code === 1) {
               // 根据后端返回的数据结构提取订单列表
               const orderData = response.data.data;
@@ -540,13 +480,13 @@ export default {
               this.ordersTotalItems = orderData.total || 0; // 总记录数
             } else {
               // 处理错误信息
-              this.ordersError = response.data.message || '获取订单失败';
+              this.ordersError = response.data.message || 'Failed to get order';
               alert(this.ordersError);
             }
           })
           .catch(error => {
-            console.error('获取订单错误:', error);
-            this.ordersError = error.response?.data?.message || '网络错误，请稍后重试';
+            console.error('Get order error:', error);
+            this.ordersError = error.response?.data?.message || 'Network error, please try again later';
             alert(this.ordersError);
           })
           .finally(() => {
@@ -585,8 +525,8 @@ export default {
             
           })
           .catch(error => {
-            console.error('支付错误:', error);
-            alert(error.response?.data?.message || '网络错误，请稍后重试');
+            console.error('Payment error:', error);
+            alert(error.response?.data?.message || 'Network error, please try again later');
           });
     },
 
@@ -605,16 +545,16 @@ export default {
         }
       })
           .then(response => {
-            console.log('获取收货地址响应:', response.data);
+            console.log('Get the shipping address response:', response.data);
             if (response.data.code === 1) {
               this.addressList = response.data.data || [];
             } else {
-              this.addressError = response.data.message || '获取收货地址失败';
+              this.addressError = response.data.message || 'Failed to get shipping address';
             }
           })
           .catch(error => {
-            console.error('获取收货地址错误:', error);
-            this.addressError = error.response?.data?.message || '网络错误，请稍后重试';
+            console.error('Error in getting shipping address:', error);
+            this.addressError = error.response?.data?.message || 'Network error, please try again later';
           })
           .finally(() => {
             this.addressLoading = false;
@@ -640,16 +580,7 @@ export default {
       this.tempAddress = {}; // 清空 tempAddress
     },
 
-    // startEditingAddress(address) {
-    //   this.currentAddressId = address.addressId;
-    //   this.tempAddress = { ...address };
-    //   this.isEditingAddress = true;
-    // },
-    //
-    // cancelEditingAddress() {
-    //   this.isEditingAddress = false;
-    //   this.currentAddressId = null;
-    // },
+
 
     saveAddress() {
       // 1. 拼接完整地址（省份 + 城市 + 区县 + 详细地址）
@@ -674,7 +605,7 @@ export default {
         }
       })
           .then(response => {
-            console.log('保存收货地址响应:', response.data);
+            console.log('Save the shipping address response:', response.data);
             if (response.data.code === 1) {
               // 更新成功，更新本地地址列表
               const index = this.addressList.findIndex(item => item.addressId === this.currentAddressId);
@@ -685,19 +616,19 @@ export default {
               }
               this.isEditingAddress = false;
               this.currentAddressId = null;
-              alert('保存成功！');
+              alert('Saved successfully!');
             } else {
-              alert(response.data.message || '保存失败，请重试');
+              alert(response.data.message || 'Failed to save, please try again');
             }
           })
           .catch(error => {
-            console.error('保存收货地址错误:', error);
-            alert(error.response?.data?.message || '网络错误，请稍后重试');
+            console.error('Error in saving shipping address:', error);
+            alert(error.response?.data?.message || 'Network error, please try again later');
           });
     },
 
     removeAddress(addressId) {
-      if (confirm('确定要删除这个收货地址吗？')) {
+      if (confirm('Are you sure you want to delete this shipping address?')) {
         this.$http.delete('/address', {
           headers: {
             'user-info': JSON.stringify({
@@ -709,20 +640,20 @@ export default {
           data: [addressId]  // 注意这里传递的是数组，因为后端接收的是List<Long> ids
         })
             .then(response => {
-              console.log('删除收货地址响应:', response.data);
+              console.log('Remove the shipping address response:', response.data);
               if (response.data.code === 1) {
                 // 从列表中移除该地址
                 this.addressList = this.addressList.filter(
                     item => item.addressId !== addressId
                 );
-                alert('删除成功');
+                alert('Delete successfully');
               } else {
-                alert(response.data.message || '删除失败');
+                alert(response.data.message || 'Deletion failure');
               }
             })
             .catch(error => {
-              console.error('删除收货地址错误:', error);
-              alert(error.response?.data?.message || '网络错误，请稍后重试');
+              console.error('Remove the shipping address error:', error);
+              alert(error.response?.data?.message || 'Network error, please try again later');
             });
       }
     }
@@ -763,12 +694,13 @@ export default {
 </script>
 
 <template>
+  <Header></Header>
   <div class="profile-page">
     <div class="container">
       <div class="profile-sidebar">
         <div class="user-card">
           <div class="avatar-container" @click="openUploadDialog">
-            <img :src="userInfo.avatarUrl" alt="用户头像" class="avatar" />
+            <img :src="userInfo.avatarUrl" alt="avatar" class="avatar" />
             <div class="avatar-overlay">
               <i class="icon">📷</i>
             </div>
@@ -776,26 +708,26 @@ export default {
           <h2>{{ userInfo.username }}</h2>
           <div class="user-status">
             <span :class="['status-badge', userInfo.accountStatus === 'active' ? 'active' : 'inactive']">
-              {{ userInfo.accountStatus === 'active' ? '正常' : '已禁用' }}
+              {{ userInfo.accountStatus === 'active' ? 'normal' : 'Disabled' }}
             </span>
           </div>
           <div class="user-stats">
             <div class="stat-item">
               <span class="stat-value">12</span>
-              <span class="stat-label">收藏</span>
+              <span class="stat-label">Collection</span>
             </div>
             <div class="stat-item">
               <span class="stat-value">8</span>
-              <span class="stat-label">发布</span>
+              <span class="stat-label">Release</span>
             </div>
             <div class="stat-item">
               <span class="stat-value">256</span>
-              <span class="stat-label">浏览</span>
+              <span class="stat-label">Browse</span>
             </div>
           </div>
           <!-- 添加退出登录按钮 -->
           <button class="logout-btn" @click="handleLogout">
-            <i class="icon">🚪</i> 退出登录
+            <i class="icon">🚪</i> Log Out
           </button>
         </div>
         
@@ -816,40 +748,40 @@ export default {
         <!-- 个人信息 -->
         <div v-if="activeTab === 'profile'" class="profile-section">
           <div class="section-header">
-            <h3>个人信息</h3>
+            <h3>Personal Information</h3>
             <button v-if="!isEditing" class="btn edit-btn" @click="startEditing">
-              <i class="icon">✏️</i> 编辑
+              <i class="icon">✏️</i> Editing
             </button>
           </div>
           
           <template v-if="isEditing">
             <form @submit.prevent="saveProfile" class="profile-form">
               <div class="form-group">
-                <label>用户名</label>
+                <label>User name</label>
                 <input type="text" :value="userInfo.username" disabled />
-                <span class="field-hint">用户名不可修改</span>
+                <span class="field-hint">Usernames are immutable</span>
               </div>
               <div class="form-group">
-                <label>邮箱</label>
+                <label>Email</label>
                 <input type="email" :value="userInfo.email" disabled />
-                <span class="field-hint">邮箱不可修改</span>
+                <span class="field-hint">Email is immutable</span>
               </div>
               <div class="form-group">
-                <label>真实姓名</label>
+                <label>Real name</label>
                 <input type="text" v-model="tempUserInfo.realName" placeholder="请输入真实姓名" />
-                <span class="field-hint">选填</span>
+                <span class="field-hint">Optional</span>
               </div>
               <div class="form-group">
-                <label>手机号</label>
+                <label>Phone</label>
                 <input type="tel" v-model="tempUserInfo.phone" placeholder="请输入手机号" />
-                <span class="field-hint">选填</span>
+                <span class="field-hint">Optional</span>
               </div>
               <div class="form-actions">
                 <button type="button" class="btn cancel-btn" @click="cancelEditing">
-                  <i class="icon">❌</i> 取消
+                  <i class="icon">❌</i> Cancel
                 </button>
                 <button type="submit" class="btn save-btn">
-                  <i class="icon">💾</i> 保存
+                  <i class="icon">💾</i> Save
                 </button>
               </div>
             </form>
@@ -858,30 +790,30 @@ export default {
           <template v-else>
             <div class="info-display">
               <div class="info-item">
-                <span class="label">用户名：</span>
+                <span class="label">User Name:</span>
                 <span class="value">{{ userInfo.username }}</span>
               </div>
               <div class="info-item">
-                <span class="label">邮箱：</span>
+                <span class="label">Email:</span>
                 <span class="value">{{ userInfo.email }}</span>
               </div>
               <div class="info-item">
-                <span class="label">真实姓名：</span>
+                <span class="label">Real Name:</span>
                 <span class="value">{{ userInfo.realName || '未设置' }}</span>
               </div>
               <div class="info-item">
-                <span class="label">手机号：</span>
+                <span class="label">Mobile Phone Number:</span>
                 <span class="value">{{ userInfo.phone || '未设置' }}</span>
               </div>
               <div class="info-item">
-                <span class="label">注册时间：</span>
+                <span class="label">Registration Time:</span>
                 <span class="value">{{ formatDate(userInfo.registrationDate) }}</span>
               </div>
               <div class="info-item">
-                <span class="label">账号状态：</span>
+                <span class="label">Account Status:</span>
                 <span class="value">
                   <span :class="['status-badge', userInfo.accountStatus === 'active' ? 'active' : 'inactive']">
-                    {{ userInfo.accountStatus === 'active' ? '正常' : '已禁用' }}
+                    {{ userInfo.accountStatus === 'active' ? 'normal' : 'Disabled' }}
                   </span>
                 </span>
               </div>
@@ -892,28 +824,28 @@ export default {
         <!-- 收货地址 - 新增模块 -->
         <div v-if="activeTab === 'address'" class="profile-section">
           <div class="section-header">
-            <h3>收货地址</h3>
+            <h3>Address of delivery</h3>
             <button class="btn post-btn" @click="isEditingAddress = true; tempAddress = {};">
-              <i class="icon">➕</i> 添加新地址
+              <i class="icon">➕</i> Adding a new address
             </button>
           </div>
 
           <div v-if="addressLoading" class="loading-state">
             <i class="loading-icon">⏳</i>
-            <p>加载中...</p>
+            <p>Loading...</p>
           </div>
 
           <div v-else-if="addressError" class="error-state">
             <i class="error-icon">❌</i>
             <p>{{ addressError }}</p>
-            <button class="btn retry-btn" @click="fetchAddressList">重试</button>
+            <button class="btn retry-btn" @click="fetchAddressList">Retry</button>
           </div>
 
           <div v-else-if="addressList.length === 0" class="empty-state">
             <i class="empty-icon">📦</i>
-            <p>暂无收货地址</p>
+            <p>No delivery address at present</p>
             <button class="btn explore-btn" @click="isEditingAddress = true; tempAddress = {};">
-              <i class="icon">➕</i> 添加新地址
+              <i class="icon">➕</i> Adding a new address
             </button>
           </div>
 
@@ -924,14 +856,14 @@ export default {
                   <h4>{{ address.receiverName }}</h4>
                   <p>{{ address.receiverPhone }}</p>
                   <p>{{ address.province }} {{ address.city }} {{ address.district }} {{ address.detailAddress }}</p>
-                  <p v-if="address.isDefault" class="default-tag">默认地址</p>
+                  <p v-if="address.isDefault" class="default-tag">Default address</p>
                 </div>
                 <div class="address-actions">
                   <button class="edit-btn" @click="startEditingAddress(address)">
-                    <i class="icon">✏️</i> 编辑
+                    <i class="icon">✏️</i> Editing
                   </button>
                   <button class="remove-btn" @click="removeAddress(address.addressId)">
-                    <i class="icon">❌</i> 删除
+                    <i class="icon">❌</i> Delete
                   </button>
                 </div>
               </div>
@@ -943,47 +875,47 @@ export default {
         <div v-if="isEditingAddress" class="upload-dialog-overlay" @click="cancelEditingAddress">
           <div class="upload-dialog" @click.stop>
             <div class="upload-dialog-header">
-              <h3>{{ currentAddressId ? '编辑收货地址' : '添加收货地址' }}</h3>
+              <h3>{{ currentAddressId ? 'Edit the shipping address' : 'Add shipping address' }}</h3>
               <button class="close-btn" @click="cancelEditingAddress">&times;</button>
             </div>
             <div class="upload-dialog-content">
               <form @submit.prevent="saveAddress" class="address-form">
                 <div class="form-group">
-                  <label>收货人姓名</label>
-                  <input type="text" v-model="tempAddress.receiverName" placeholder="请输入收货人姓名" required />
+                  <label>Name of consignee</label>
+                  <input type="text" v-model="tempAddress.receiverName" placeholder="Please enter the name of consignee" required />
                 </div>
                 <div class="form-group">
-                  <label>手机号码</label>
-                  <input type="tel" v-model="tempAddress.receiverPhone" placeholder="请输入手机号码" required />
+                  <label>Mobile phone number</label>
+                  <input type="tel" v-model="tempAddress.receiverPhone" placeholder="Please enter your mobile number" required />
                 </div>
                 <div class="form-group">
-                  <label>省份</label>
-                  <input type="text" v-model="tempAddress.province" placeholder="请输入省份" required />
+                  <label>Provinces</label>
+                  <input type="text" v-model="tempAddress.province" placeholder="Please enter province" required />
                 </div>
                 <div class="form-group">
-                  <label>城市</label>
-                  <input type="text" v-model="tempAddress.city" placeholder="请输入城市" required />
+                  <label>Cities</label>
+                  <input type="text" v-model="tempAddress.city" placeholder="Please enter city" required />
                 </div>
                 <div class="form-group">
-                  <label>区县</label>
-                  <input type="text" v-model="tempAddress.district" placeholder="请输入区县" required />
+                  <label>District and county</label>
+                  <input type="text" v-model="tempAddress.district" placeholder="Please enter the district" required />
                 </div>
                 <div class="form-group">
-                  <label>详细地址</label>
-                  <input type="text" v-model="tempAddress.detailAddress" placeholder="请输入详细地址" required />
+                  <label>Full address</label>
+                  <input type="text" v-model="tempAddress.detailAddress" placeholder="Please enter the address details" required />
                 </div>
                 <div class="form-group">
-                  <label>设为默认地址</label>
+                  <label>Set to the default address</label>
                   <div>
                     <input type="checkbox" v-model="tempAddress.isDefault" />
                   </div>
                 </div>
                 <div class="form-actions">
                   <button type="button" class="btn cancel-btn" @click="cancelEditingAddress">
-                    <i class="icon">❌</i> 取消
+                    <i class="icon">❌</i> Cancel
                   </button>
                   <button type="submit" class="btn save-btn">
-                    <i class="icon">💾</i> 保存
+                    <i class="icon">💾</i> Save
                   </button>
                 </div>
               </form>
@@ -993,17 +925,17 @@ export default {
 
         <!-- 我的收藏 -->
         <div v-if="activeTab === 'favorites'" class="profile-section">
-          <h3>我的收藏</h3>
+          <h3>My Collection</h3>
           
           <div v-if="loading" class="loading-state">
             <i class="loading-icon">⏳</i>
-            <p>加载中...</p>
+            <p>loading...</p>
           </div>
           
           <div v-else-if="favoriteProducts.length === 0" class="empty-state">
             <i class="empty-icon">📚</i>
-            <p>暂无收藏内容</p>
-            <button class="btn explore-btn" @click="goToHome">去看看</button>
+            <p>No collection content</p>
+            <button class="btn explore-btn" @click="goToHome">Go and see</button>
           </div>
           
           <template v-else>
@@ -1018,18 +950,18 @@ export default {
                   />
                   <div v-else class="no-image">
                     <i class="icon">🖼️</i>
-                    <span>暂无图片</span>
+                    <span>No pictures yet</span>
                   </div>
                 </div>
                 <div class="product-info">
                   <h4>{{ item.product.title }}</h4>
                   <p class="price">¥{{ item.product.price }}</p>
-                  <p class="original-price">原价: ¥{{ item.product.originalPrice }}</p>
-                  <p class="condition">商品状态: {{ item.product.condition === 'new' ? '全新' : '二手' }}</p>
-                  <p class="add-date">收藏时间: {{ formatDate(item.addDate) }}</p>
+                  <p class="original-price">Original price: ¥{{ item.product.originalPrice }}</p>
+                  <p class="condition">Product status: {{ item.product.condition === 'new' ? 'New' : 'Second hand' }}</p>
+                  <p class="add-date">Collection time: {{ formatDate(item.addDate) }}</p>
                 </div>
                 <button class="remove-btn" @click="removeFavorite(item.favoriteId)">
-                  <i class="icon">❌</i> 取消收藏
+                  <i class="icon">❌</i> Unbookmark
                 </button>
               </div>
             </div>
@@ -1041,17 +973,17 @@ export default {
                 :disabled="currentPage === 1"
                 @click="handlePageChange(currentPage - 1)"
               >
-                上一页
+                Previous Page
               </button>
               <span class="page-info">
-                第 {{ currentPage }} 页 / 共 {{ totalPages }} 页
+                Page {{ currentPage }}  /  {{ totalPages }} pages in total
               </span>
               <button 
                 class="page-btn" 
                 :disabled="currentPage === totalPages"
                 @click="handlePageChange(currentPage + 1)"
               >
-                下一页
+                Next Page
               </button>
             </div>
           </template>
@@ -1060,21 +992,21 @@ export default {
         <!-- 浏览记录 -->
         <div v-if="activeTab === 'history'" class="profile-section">
           <div class="section-header">
-            <h3>浏览记录</h3>
+            <h3>Browsing history</h3>
             <button v-if="viewHistory.length > 0" class="btn clear-btn" @click="clearAllHistory">
-              <i class="icon">🗑️</i> 清空记录
+              <i class="icon">🗑️</i> Clear the record
             </button>
           </div>
           
           <div v-if="historyLoading" class="loading-state">
             <i class="loading-icon">⏳</i>
-            <p>加载中...</p>
+            <p>loading...</p>
           </div>
           
           <div v-else-if="viewHistory.length === 0" class="empty-state">
             <i class="empty-icon">👀</i>
-            <p>暂无浏览记录</p>
-            <button class="btn explore-btn" @click="goToHome">去看看</button>
+            <p>No browsing history</p>
+            <button class="btn explore-btn" @click="goToHome">Go and see</button>
           </div>
           
           <template v-else>
@@ -1089,18 +1021,18 @@ export default {
                   />
                   <div v-else class="no-image">
                     <i class="icon">🖼️</i>
-                    <span>暂无图片</span>
+                    <span>No pictures yet</span>
                   </div>
                 </div>
                 <div class="product-info">
                   <h4>{{ item.product.title }}</h4>
                   <p class="price">¥{{ item.product.price }}</p>
-                  <p class="original-price">原价: ¥{{ item.product.originalPrice }}</p>
-                  <p class="condition">商品状态: {{ item.product.condition === 'new' ? '全新' : '二手' }}</p>
-                  <p class="view-date">浏览时间: {{ formatDate(item.viewDate) }}</p>
+                  <p class="original-price">Original price: ¥{{ item.product.originalPrice }}</p>
+                  <p class="condition">Product status: {{ item.product.condition === 'new' ? 'New' : 'Second hand' }}</p>
+                  <p class="view-date">Browsing time: {{ formatDate(item.viewDate) }}</p>
                 </div>
                 <button class="remove-btn" @click="removeHistoryItem(item.historyId)">
-                  <i class="icon">❌</i> 删除记录
+                  <i class="icon">❌</i> Deleting records
                 </button>
               </div>
             </div>
@@ -1112,17 +1044,17 @@ export default {
                 :disabled="historyCurrentPage === 1"
                 @click="handleHistoryPageChange(historyCurrentPage - 1)"
               >
-                上一页
+                Previous Page
               </button>
               <span class="page-info">
-                第 {{ historyCurrentPage }} 页 / 共 {{ historyTotalPages }} 页
+                Page {{ historyCurrentPage }}  /  {{ historyTotalPages }} pages in total
               </span>
               <button 
                 class="page-btn" 
                 :disabled="historyCurrentPage === historyTotalPages"
                 @click="handleHistoryPageChange(historyCurrentPage + 1)"
               >
-                下一页
+                Next page
               </button>
             </div>
           </template>
@@ -1131,7 +1063,7 @@ export default {
         <!-- 我的订单 -->
         <div v-if="activeTab === 'orders'" class="profile-section">
           <div class="section-header">
-            <h3>我的订单</h3>
+            <h3>My order</h3>
             <!-- 如果需要添加创建订单的按钮，可以在这里添加 -->
             <!-- <button class="btn post-btn" @click="createOrder">
               <i class="icon">🛒</i> 创建订单
@@ -1140,13 +1072,13 @@ export default {
 
           <div v-if="ordersLoading" class="loading-state">
             <i class="loading-icon">⏳</i>
-            <p>加载中...</p>
+            <p>loading...</p>
           </div>
 
           <div v-else-if="orders.length === 0" class="empty-state">
             <i class="empty-icon">📦</i>
-            <p>暂无订单记录</p>
-            <button class="btn explore-btn" @click="goToHome">去逛逛</button>
+            <p>No order record</p>
+            <button class="btn explore-btn" @click="goToHome">Go for a stroll</button>
           </div>
 
           <template v-else>
@@ -1161,14 +1093,14 @@ export default {
                   />
                   <div v-else class="no-image">
                     <i class="icon">🖼️</i>
-                    <span>暂无图片</span>
+                    <span>No pictures yet</span>
                   </div>
                 </div>
                 <div class="order-info">
-                  <h4>订单号: {{ item.orderId }}</h4>
-                  <p>商品: {{ item.title }}</p>
-                  <p>价格: ¥{{ item.price.toFixed(2) }}</p>
-                  <p>状态:
+                  <h4>Order number: {{ item.orderId }}</h4>
+                  <p>Commodity: {{ item.title }}</p>
+                  <p>Price: ¥{{ item.price.toFixed(2) }}</p>
+                  <p>State:
                     <span :class="['status-badge',
               item.status === 'PENDING' ? 'pending' :
               item.status === 'SHIPPED' ? 'shipped' :
@@ -1176,24 +1108,24 @@ export default {
               item.status === 'CANCELLED' ? 'cancelled' :
               item.status === 'REFUNDED' ? 'refunded' : 'unknown']">
               {{
-                        item.status === 'pending' ? '待付款' :
-                            item.status === 'shipped' ? '已发货' :
-                                item.status === 'completed' ? '已完成' :
-                                    item.status === 'cancelled' ? '已取消' :
-                                        item.status === 'refunded' ? '已退款' :
-                                            '未知状态'
+                        item.status === 'pending' ? 'Pending payment' :
+                            item.status === 'shipped' ? 'Shipped' :
+                                item.status === 'completed' ? 'Completed' :
+                                    item.status === 'cancelled' ? 'Cancelled' :
+                                        item.status === 'refunded' ? 'A refund has been made' :
+                                            'Unknown state'
                       }}
             </span>
                   </p>
-                  <p>创建时间: {{ formatDate(item.createTime) }}</p>
-                  <p v-if="item.payTime">支付时间: {{ formatDate(item.payTime) }}</p>
-                  <p v-if="item.payId">支付ID: {{ item.payId }}</p>
+                  <p>Creation time: {{ formatDate(item.createTime) }}</p>
+                  <p v-if="item.payTime">Time of payment: {{ formatDate(item.payTime) }}</p>
+                  <p v-if="item.payId">Payment ID: {{ item.payId }}</p>
 
                   <button
                       v-if="item.status === 'pending'"
                       class="pay-btn"
                       @click="handlePayment(item)">
-                    <i class="icon">💳</i> 支付
+                    <i class="icon">💳</i> payment
                   </button>
                 </div>
               </div>
@@ -1206,17 +1138,17 @@ export default {
                   :disabled="ordersCurrentPage === 1"
                   @click="handleOrdersPageChange(ordersCurrentPage - 1)"
               >
-                上一页
+                Previous Page
               </button>
               <span class="page-info">
-        第 {{ ordersCurrentPage }} 页 / 共 {{ ordersTotalPages }} 页
+        Page {{ ordersCurrentPage }}  /  {{ ordersTotalPages }} pages in total
       </span>
               <button
                   class="page-btn"
                   :disabled="ordersCurrentPage === ordersTotalPages"
                   @click="handleOrdersPageChange(ordersCurrentPage + 1)"
               >
-                下一页
+                Next Page
               </button>
             </div>
           </template>
@@ -1225,21 +1157,21 @@ export default {
         <!-- 我的发布 -->
         <div v-if="activeTab === 'posts'" class="profile-section">
           <div class="section-header">
-            <h3>我的发布</h3>
+            <h3>My Release</h3>
             <button class="btn post-btn" @click="goToHome">
-              <i class="icon">📝</i> 发布新商品
+              <i class="icon">📝</i> Release new products
             </button>
           </div>
           
           <div v-if="postsLoading" class="loading-state">
             <i class="loading-icon">⏳</i>
-            <p>加载中...</p>
+            <p>loading...</p>
           </div>
           
           <div v-else-if="myPosts.length === 0" class="empty-state">
             <i class="empty-icon">📝</i>
-            <p>暂无发布内容</p>
-            <button class="btn explore-btn" @click="goToHome">去发布</button>
+            <p>No release yet</p>
+            <button class="btn explore-btn" @click="goToHome">To publish</button>
           </div>
           
           <template v-else>
@@ -1254,17 +1186,17 @@ export default {
                   />
                   <div v-else class="no-image">
                     <i class="icon">🖼️</i>
-                    <span>暂无图片</span>
+                    <span>No pictures yet</span>
                   </div>
                 </div>
                 <div class="product-info">
                   <h4>{{ item.title }}</h4>
                   <p class="price">¥{{ item.price }}</p>
-                  <p class="original-price">原价: ¥{{ item.originalPrice }}</p>
-                  <p class="condition">商品状态: {{ item.condition === 'new' ? '全新' : '二手' }}</p>
-                  <p class="post-date">发布时间: {{ formatDate(item.postDate) }}</p>
-                  <p class="view-count">浏览: {{ item.viewCount }}</p>
-                  <p class="favorite-count">收藏: {{ item.favoriteCount }}</p>
+                  <p class="original-price">Original price: ¥{{ item.originalPrice }}</p>
+                  <p class="condition">Product status: {{ item.condition === 'new' ? 'New' : 'Second hand' }}</p>
+                  <p class="post-date">Release time: {{ formatDate(item.postDate) }}</p>
+                  <p class="view-count">Browse: {{ item.viewCount }}</p>
+                  <p class="favorite-count">Collection: {{ item.favoriteCount }}</p>
                 </div>
               </div>
             </div>
@@ -1276,17 +1208,17 @@ export default {
                 :disabled="postsCurrentPage === 1"
                 @click="handlePostsPageChange(postsCurrentPage - 1)"
               >
-                上一页
+                Previous Page
               </button>
               <span class="page-info">
-                第 {{ postsCurrentPage }} 页 / 共 {{ postsTotalPages }} 页
+                Page {{ postsCurrentPage }}  /  {{ postsTotalPages }} pages in total
               </span>
               <button 
                 class="page-btn" 
                 :disabled="postsCurrentPage === postsTotalPages"
                 @click="handlePostsPageChange(postsCurrentPage + 1)"
               >
-                下一页
+                Next Page
               </button>
             </div>
           </template>
@@ -1294,22 +1226,22 @@ export default {
 
         <!-- 修改密码 -->
         <div v-if="activeTab === 'security'" class="profile-section">
-          <h3>修改密码</h3>
+          <h3>Change your password</h3>
           <form @submit.prevent="changePassword" class="profile-form">
             <div class="form-group">
-              <label>当前密码</label>
+              <label>Current password</label>
               <input type="password" v-model="passwordForm.oldPassword" placeholder="请输入当前密码" />
             </div>
             <div class="form-group">
-              <label>新密码</label>
+              <label>New password</label>
               <input type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码" />
             </div>
             <div class="form-group">
-              <label>确认新密码</label>
+              <label>Confirm new password</label>
               <input type="password" v-model="passwordForm.confirmPassword" placeholder="请再次输入新密码" />
             </div>
             <div class="form-group verification-group">
-              <label>验证码</label>
+              <label>Verification code</label>
               <div class="verification-input">
                 <input type="text" v-model="passwordForm.verificationCode" placeholder="请输入验证码" />
                 <button 
@@ -1318,81 +1250,55 @@ export default {
                   @click="sendVerificationCode"
                   :disabled="isSendingCode"
                 >
-                  {{ isSendingCode ? `${countdown}秒后重试` : '发送验证码' }}
+                  {{ isSendingCode ? `Try again in ${countdown} second` : 'Send CAPtCHA' }}
                 </button>
               </div>
             </div>
             <button type="submit" class="btn save-btn">
-              <i class="icon">🔒</i> 修改密码
+              <i class="icon">🔒</i> Change your password
             </button>
           </form>
         </div>
 
         <!-- 使用指南区域 -->
         <div class="guide-section">
-          <h3>使用指南</h3>
+          <h3>User Guide</h3>
           <div class="guide-grid">
             <div class="guide-card">
               <div class="guide-icon">📝</div>
               <div class="guide-content">
-                <h4>如何发布内容</h4>
+                <h4>How to Publish Content</h4>
                 <ul>
-                  <li>点击首页的"发布"按钮</li>
-                  <li>选择要发布的内容类型</li>
-                  <li>填写标题和详细描述</li>
-                  <li>上传相关图片</li>
-                  <li>点击发布即可</li>
+                  <li>Click the "Publish" button on the home page</li>
+                  <li>Select the type of content you want to publish</li>
+                  <li>Fill in the title and detailed description</li>
+                  <li>Upload relevant images</li>
+                  <li>Just click publish</li>
                 </ul>
               </div>
             </div>
             <div class="guide-card">
               <div class="guide-icon">🔍</div>
               <div class="guide-content">
-                <h4>如何搜索内容</h4>
+                <h4>How to search for content</h4>
                 <ul>
-                  <li>使用顶部搜索栏</li>
-                  <li>输入关键词或标签</li>
-                  <li>选择筛选条件</li>
-                  <li>点击搜索按钮</li>
+                  <li>Use the top search bar</li>
+                  <li>Enter keywords or tags</li>
+                  <li>Select filter criteria</li>
+                  <li>Click the search button</li>
                 </ul>
               </div>
             </div>
             <div class="guide-card">
               <div class="guide-icon">💬</div>
               <div class="guide-content">
-                <h4>如何互动交流</h4>
+                <h4>How to Interact</h4>
                 <ul>
-                  <li>在内容下方发表评论</li>
-                  <li>点赞感兴趣的内容</li>
-                  <li>收藏优质内容</li>
-                  <li>关注感兴趣的用户</li>
+                  <li>Leave a comment below</li>
+                  <li>Like content of interest</li>
+                  <li>Collect quality content</li>
+                  <li>Follow interested users</li>
                 </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 平台介绍区域 -->
-        <div class="platform-section">
-          <h3>关于我们</h3>
-          <div class="platform-content">
-            <p>SecondSpin是一个专注于二手交易的社区平台，我们致力于：</p>
-            <div class="platform-features">
-              <div class="feature-item">
-                <span class="feature-icon">🔄</span>
-                <span class="feature-text">促进物品循环利用</span>
-              </div>
-              <div class="feature-item">
-                <span class="feature-icon">🤝</span>
-                <span class="feature-text">建立诚信交易环境</span>
-              </div>
-              <div class="feature-item">
-                <span class="feature-icon">🌱</span>
-                <span class="feature-text">践行环保理念</span>
-              </div>
-              <div class="feature-item">
-                <span class="feature-icon">👥</span>
-                <span class="feature-text">打造友好社区氛围</span>
               </div>
             </div>
           </div>
@@ -1404,7 +1310,7 @@ export default {
     <div v-if="showUploadDialog" class="upload-dialog-overlay" @click="closeUploadDialog">
       <div class="upload-dialog" @click.stop>
         <div class="upload-dialog-header">
-          <h3>更换头像</h3>
+          <h3>Change the avatar</h3>
           <button class="close-btn" @click="closeUploadDialog">&times;</button>
         </div>
         <div class="upload-dialog-content">
@@ -1418,14 +1324,15 @@ export default {
             />
             <label for="avatar-upload" class="upload-label">
               <div class="upload-icon">📁</div>
-              <div class="upload-text">点击选择图片</div>
-              <div class="upload-hint">支持 jpg、png 格式</div>
+              <div class="upload-text">I'll go ahead and select the image</div>
+              <div class="upload-hint">Support jpg, png format</div>
             </label>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <Footer></Footer>
 </template>
 
 <style scoped>

@@ -19,7 +19,7 @@
               <i class="icon">+</i> Publish
             </button>
             <div class="user-avatar" @click="gotoProfile">
-              <img :src="userAvatar" alt="用户头像" />
+              <img :src="userAvatar" alt="avatar" />
             </div>
           </div>
         </div>
