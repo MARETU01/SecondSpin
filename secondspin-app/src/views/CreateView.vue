@@ -10,7 +10,7 @@
           <h2>Product information</h2>
           <div class="form-group">
             <label for="title">Product Title*</label>
-            <input type="text" id="title" v-model="product.title" required maxlength="50" placeholder="请输入商品标题（最多50字）">
+            <input type="text" id="title" v-model="product.title" required maxlength="50" placeholder="Please enter the product title (maximum 50 words)">
           </div>
 
           <div class="form-group">

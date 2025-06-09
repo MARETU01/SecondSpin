@@ -768,12 +768,12 @@ export default {
               </div>
               <div class="form-group">
                 <label>Real name</label>
-                <input type="text" v-model="tempUserInfo.realName" placeholder="请输入真实姓名" />
+                <input type="text" v-model="tempUserInfo.realName" placeholder="Please enter your real name" />
                 <span class="field-hint">Optional</span>
               </div>
               <div class="form-group">
                 <label>Phone</label>
-                <input type="tel" v-model="tempUserInfo.phone" placeholder="请输入手机号" />
+                <input type="tel" v-model="tempUserInfo.phone" placeholder="Please enter your mobile phone number" />
                 <span class="field-hint">Optional</span>
               </div>
               <div class="form-actions">
@@ -1230,20 +1230,20 @@ export default {
           <form @submit.prevent="changePassword" class="profile-form">
             <div class="form-group">
               <label>Current password</label>
-              <input type="password" v-model="passwordForm.oldPassword" placeholder="请输入当前密码" />
+              <input type="password" v-model="passwordForm.oldPassword" placeholder="Please enter your current password" />
             </div>
             <div class="form-group">
               <label>New password</label>
-              <input type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码" />
+              <input type="password" v-model="passwordForm.newPassword" placeholder="Please enter a new password" />
             </div>
             <div class="form-group">
               <label>Confirm new password</label>
-              <input type="password" v-model="passwordForm.confirmPassword" placeholder="请再次输入新密码" />
+              <input type="password" v-model="passwordForm.confirmPassword" placeholder="Please enter a new password again" />
             </div>
             <div class="form-group verification-group">
               <label>Verification code</label>
               <div class="verification-input">
-                <input type="text" v-model="passwordForm.verificationCode" placeholder="请输入验证码" />
+                <input type="text" v-model="passwordForm.verificationCode" placeholder="Please enter the verification code" />
                 <button 
                   type="button" 
                   class="send-code-btn" 
