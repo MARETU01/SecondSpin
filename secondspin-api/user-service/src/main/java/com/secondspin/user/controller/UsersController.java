@@ -9,6 +9,7 @@ import com.secondspin.user.service.IUsersService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -142,5 +143,32 @@ public class UsersController {
     @GetMapping
     public List<Users> getUsersInfo(@RequestParam List<Integer> ids) {
         return usersService.listByIds(ids);
+    }
+
+    @GetMapping("/search")
+    public Result<List<Users>> searchUsers(@RequestParam String search) {
+        try {
+            // 搜索
+            List<Users> allUsers = usersService.list(); // 获取所有用户
+            List<Users> results = new ArrayList<>();
+
+            String lowerSearch = search.toLowerCase();
+            for (Users user : allUsers) {
+                if (user.getUsername().toLowerCase().contains(lowerSearch) ||
+                        user.getEmail().toLowerCase().contains(lowerSearch)) {
+                    // 创建脱敏副本
+                    Users safeUser = new Users();
+                    safeUser.setUserId(user.getUserId());
+                    safeUser.setUsername(user.getUsername());
+                    safeUser.setEmail(user.getEmail());
+                    safeUser.setAvatarUrl(user.getAvatarUrl());
+                    results.add(safeUser);
+                }
+            }
+
+            return Result.success(results);
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
     }
 }

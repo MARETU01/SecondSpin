@@ -4,10 +4,41 @@
     <div class="chat-main">
       <div class="chat-sidebar">
         <div class="chat-header">
-          <h2>消息</h2>
-          <div class="search-container">
-            <input type="text" placeholder="搜索联系人..." v-model="searchQuery">
-            <i class="search-icon">🔍</i>
+          <h2>最近联系</h2>
+          <button class="new-chat-btn" @click="showUserSearch = true">
+            <i>+</i> 新建聊天
+          </button>
+        </div>
+
+        <!-- 用户搜索模态框 -->
+        <div v-if="showUserSearch" class="user-search-modal">
+          <div class="modal-content">
+            <h3>搜索用户</h3>
+            <input
+                type="text"
+                v-model="userSearchQuery"
+                placeholder="输入用户名或邮箱（输完后请按回车）"
+                @keyup.enter="searchUsers"
+            >
+            <div v-if="searchingUsers" class="loading">搜索中...</div>
+            <div v-else-if="searchResults.length > 0" class="search-results">
+              <div
+                  v-for="user in searchResults"
+                  :key="user.userId"
+                  class="search-result-item"
+                  @click="startNewChat(user)"
+              >
+                <img :src="getAvatar(user.avatarUrl)" :alt="user.username" class="avatar">
+                <div class="user-info">
+                  <strong>{{ user.username }}</strong>
+                  <span>{{ user.email }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="userSearchQuery" class="no-results">
+              未找到匹配的用户
+            </div>
+            <button class="cancel-btn" @click="showUserSearch = false">取消</button>
           </div>
         </div>
 
@@ -17,12 +48,12 @@
           </div>
 
           <div v-else-if="contacts.length === 0" class="empty-contacts">
-            <i>👤</i> 暂无联系人
+            <i>👤</i> 暂无聊天记录
           </div>
 
           <div
               v-else
-              v-for="contact in filteredContacts"
+              v-for="contact in contacts"
               :key="contact.userId"
               class="contact-item"
               :class="{ active: activeContact === contact.userId }"
@@ -35,10 +66,6 @@
             <div class="contact-info">
               <h3>{{ contact.username }}</h3>
               <p class="last-message">{{ contact.lastMessage }}</p>
-            </div>
-            <div class="message-info">
-              <span class="message-time">{{ formatTime(contact.lastTime) }}</span>
-              <span class="unread-count" v-if="contact.unreadCount > 0">{{ contact.unreadCount }}</span>
             </div>
           </div>
         </div>
@@ -104,7 +131,8 @@
         <div v-else class="empty-chat">
           <div class="empty-content">
             <i class="chat-icon">💬</i>
-            <h3>选择一个聊天</h3>
+            <h3 v-if="newChatPartner">与 {{ newChatPartner.username }} 开始聊天</h3>
+            <h3 v-else>选择一个聊天</h3>
             <p>开始与二手平台上的用户交流吧！</p>
           </div>
         </div>
@@ -125,6 +153,12 @@ export default {
     AppHeader,
     AppFooter
   },
+  filters: {
+    truncate(value, length) {
+      if (!value) return '';
+      return value.length > length ? value.substring(0, length) + '...' : value;
+    }
+  },
   data() {
     // 获取用户信息
     let currentUser = { userId: 0 };
@@ -138,7 +172,6 @@ export default {
     }
 
     return {
-      searchQuery: '',
       activeContact: null,
       newMessage: '',
       contacts: [],
@@ -148,22 +181,41 @@ export default {
       loadingMessages: false,
       loadingContacts: false,
       currentUser,
-      defaultAvatar: require('@/assets/logo.png')
+      defaultAvatar: require('../../public/images/avatar/default.png'),
+
+      // 新建聊天相关状态
+      showUserSearch: false,
+      userSearchQuery: '',
+      searchingUsers: false,
+      searchResults: [],
+      newChatPartner: null,
+
+      // 路由参数
+      routeUserId: null
     }
   },
   computed: {
-    filteredContacts() {
-      return this.contacts.filter(contact =>
-          contact.username?.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
-    },
     activeContactData() {
       return this.contacts.find(c => c.userId === this.activeContact) || null;
+    },
+    // 计算属性：获取带有token的头部
+    headers() {
+      const token = localStorage.getItem('token');
+      return token ? { 'SecondSpin': token } : {};
+    }
+  },
+  watch: {
+    // 监听路由变化
+    '$route'(to) {
+      if (to.query.userId) {
+        this.routeUserId = parseInt(to.query.userId);
+        this.handleRouteUserId();
+      }
     }
   },
   methods: {
     getAvatar(avatarUrl) {
-      return avatarUrl ? `/images/avatar/${avatarUrl}` : this.defaultAvatar;
+      return avatarUrl ? `../../public/images/avatar/${avatarUrl}` : this.defaultAvatar;
     },
 
     async selectContact(contact) {
@@ -175,6 +227,56 @@ export default {
       this.markAsRead(contact.userId);
       this.scrollToBottom();
       this.loadingMessages = false;
+      this.newChatPartner = null;
+    },
+
+    // 处理路由参数中的用户ID
+    async handleRouteUserId() {
+      if (!this.routeUserId) return;
+
+      // 检查是否已经在联系人中
+      const existingContact = this.contacts.find(c => c.userId === this.routeUserId);
+
+      if (existingContact) {
+        this.selectContact(existingContact);
+      } else {
+        // 获取用户信息
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) return;
+
+          const response = await this.$http.get(`/users/info/${this.routeUserId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+
+          if (response.data?.code === 1) {
+            const user = response.data.data;
+            this.newChatPartner = {
+              userId: user.userId,
+              username: user.username,
+              avatarUrl: user.avatarUrl
+            };
+
+            // 创建新的联系人项
+            const newContact = {
+              userId: user.userId,
+              username: user.username,
+              avatarUrl: user.avatarUrl,
+              lastMessage: '',
+              lastTime: new Date().toISOString(),
+              unreadCount: 0
+            };
+
+            // 添加到联系人列表
+            this.contacts.unshift(newContact);
+            // 选中该联系人
+            this.selectContact(newContact);
+          }
+        } catch (error) {
+          console.error('获取用户信息失败:', error);
+          alert('无法获取用户信息，请稍后重试');
+        }
+      }
     },
 
     async fetchContacts() {
@@ -196,8 +298,15 @@ export default {
             lastTime: contact.lastMessageTime
           }));
 
-          // 选择第一个联系人
-          if (this.contacts.length > 0 && !this.activeContact) {
+          // 按最后消息时间排序（最新在上）
+          this.contacts.sort((a, b) => {
+            return new Date(b.lastTime) - new Date(a.lastTime);
+          });
+
+          // 处理路由参数中的用户ID
+          if (this.routeUserId) {
+            this.handleRouteUserId();
+          } else if (this.contacts.length > 0) {
             this.selectContact(this.contacts[0]);
           }
         }
@@ -206,6 +315,88 @@ export default {
       } finally {
         this.loadingContacts = false;
       }
+    },
+
+    // 搜索用户
+    async searchUsers() {
+      if (!this.userSearchQuery.trim()) {
+        this.searchResults = [];
+        return;
+      }
+
+      try {
+        this.searchingUsers = true;
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('请先登录');
+          return;
+        }
+
+        const response = await this.$http.get('/users/search', {
+          params: {
+            search: this.userSearchQuery
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('搜索响应:', response);
+
+        if (response.data?.code === 1 && response.data.data) {
+          // 过滤掉当前用户
+          this.searchResults = response.data.data.filter(
+              user => user.userId !== this.currentUser.userId
+          );
+        } else {
+          this.searchResults = [];
+          console.warn('未收到有效数据', response.data);
+        }
+      } catch (error) {
+        console.error('搜索用户失败:', error);
+        this.searchResults = [];
+
+        // 显示错误信息
+        if (error.response) {
+          console.error('响应数据:', error.response.data);
+          console.error('状态码:', error.response.status);
+          alert(`搜索失败: ${error.response.data.message || error.response.statusText}`);
+        } else {
+          alert('网络错误，请检查连接');
+        }
+      } finally {
+        this.searchingUsers = false;
+      }
+    },
+
+    // 开始新聊天
+    startNewChat(user) {
+      // 检查是否已经在联系人中
+      const existingContact = this.contacts.find(c => c.userId === user.userId);
+
+      if (existingContact) {
+        this.selectContact(existingContact);
+      } else {
+        // 创建新的联系人项
+        const newContact = {
+          userId: user.userId,
+          username: user.username,
+          avatarUrl: user.avatarUrl,
+          lastMessage: '',
+          lastTime: new Date().toISOString(),
+          unreadCount: 0
+        };
+
+        // 添加到联系人列表
+        this.contacts.unshift(newContact);
+        // 选中该联系人
+        this.selectContact(newContact);
+      }
+
+      // 关闭搜索模态框
+      this.showUserSearch = false;
+      this.userSearchQuery = '';
+      this.searchResults = [];
     },
 
     async fetchMessages(userId) {
@@ -221,6 +412,8 @@ export default {
 
         if (response.data?.code === 1) {
           this.messages = response.data.data || [];
+          // 确保消息按时间排序
+          this.messages.sort((a, b) => new Date(a.sendTime) - new Date(b.sendTime));
         }
       } catch (error) {
         console.error('获取消息失败:', error);
@@ -242,12 +435,10 @@ export default {
       }
 
       try {
-        const socket = new SockJS('http://localhost:8084');
+        const socket = new SockJS('http://localhost:8080/chat');
         this.stompClient = new Client({
           webSocketFactory: () => socket,
-          connectHeaders: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          },
+          connectHeaders: this.headers, // 使用计算属性中的头部
           debug: (str) => console.log(str),
           reconnectDelay: 5000,
           heartbeatIncoming: 4000,
@@ -257,8 +448,9 @@ export default {
 
             // 订阅消息队列
             this.stompClient.subscribe(
-                `/user/${this.currentUser.userId}/queue/messages`,
-                (message) => this.handleIncomingMessage(message)
+                `/private/${this.currentUser.userId}`,
+                (message) => this.handleIncomingMessage(message),
+                this.headers // 使用计算属性中的头部
             );
 
             // 订阅在线用户列表更新
@@ -284,21 +476,50 @@ export default {
     handleIncomingMessage(message) {
       try {
         const msg = JSON.parse(message.body);
+        console.log('收到消息:', msg); // 添加调试日志
 
-        if (this.activeContact === msg.senderId) {
+        // 确保消息被添加到正确的会话
+        const isActiveContact = this.activeContact === msg.senderId;
+        const contact = this.contacts.find(c => c.userId === msg.senderId);
+
+        if (isActiveContact) {
+          // 添加到当前聊天窗口
           this.messages.push(msg);
           this.$nextTick(() => this.scrollToBottom());
+        } else if (contact) {
+          // 更新联系人列表中的最后消息
+          contact.lastMessage = msg.content;
+          contact.lastTime = msg.sendTime;
+          contact.unreadCount = (contact.unreadCount || 0) + 1;
         } else {
-          const contact = this.contacts.find(c => c.userId === msg.senderId);
-          if (contact) {
-            contact.unreadCount = (contact.unreadCount || 0) + 1;
-            contact.lastMessage = msg.content;
-            contact.lastTime = msg.sendTime;
-          }
+          // 新联系人：创建并添加到列表
+          this.createNewContact(msg);
         }
       } catch (e) {
         console.error('处理消息失败:', e);
       }
+    },
+
+    // 创建新联系人
+    createNewContact(msg) {
+      this.$http.get(`/users/info/${msg.senderId}`, {
+        headers: this.headers
+      }).then(response => {
+        if (response.data?.code === 1) {
+          const user = response.data.data;
+          const newContact = {
+            userId: user.userId,
+            username: user.username,
+            avatarUrl: user.avatarUrl,
+            lastMessage: msg.content,
+            lastTime: msg.sendTime,
+            unreadCount: 1
+          };
+          this.contacts.unshift(newContact);
+        }
+      }).catch(error => {
+        console.error('获取用户信息失败:', error);
+      });
     },
 
     handleOnlineUsers(message) {
@@ -322,26 +543,57 @@ export default {
       // 如果WebSocket已连接，通过WebSocket发送
       if (this.stompClient && this.stompClient.connected) {
         this.stompClient.publish({
-          destination: '/app/chat',
+          destination: '/chat/send',
+          headers: this.headers, // 使用计算属性中的头部
           body: JSON.stringify(message)
         });
       } else {
         console.warn('WebSocket未连接，无法发送实时消息');
+        // 降级方案：尝试通过API发送
+        this.sendViaApi(message);
       }
 
       // 添加到本地消息列表
+      this.addLocalMessage(message);
+    },
+
+    // 通过API发送消息（WebSocket不可用时的降级方案）
+    async sendViaApi(message) {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await this.$http.post('/messages/send', message, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            ...this.headers
+          }
+        });
+
+        if (response.data.code === 1) {
+          console.log('通过API发送消息成功');
+        }
+      } catch (error) {
+        console.error('通过API发送消息失败:', error);
+      }
+    },
+
+    // 添加消息到本地列表
+    addLocalMessage(message) {
+      // 添加到消息列表
       this.messages.push({
         ...message,
         senderId: this.currentUser.userId
       });
 
       // 更新联系人最后一条消息
-      const contact = this.contacts.find(c => c.userId === this.activeContactData.userId);
+      const contact = this.contacts.find(c => c.userId === message.receiverId);
       if (contact) {
         contact.lastMessage = message.content;
         contact.lastTime = message.sendTime;
       }
 
+      // 清空输入框并滚动到底部
       this.newMessage = '';
       this.$nextTick(() => this.scrollToBottom());
     },
@@ -369,11 +621,19 @@ export default {
     }
   },
   mounted() {
+    // 获取路由参数中的用户ID
+    this.routeUserId = this.$route.query.userId
+        ? parseInt(this.$route.query.userId)
+        : null;
+
     // 确保按顺序执行
-    setTimeout(() => {
-      this.fetchContacts();
+    this.fetchContacts().then(() => {
       this.connectWebSocket();
-    }, 100);
+
+      if (this.routeUserId) {
+        this.handleRouteUserId();
+      }
+    });
   },
   beforeUnmount() {
     if (this.stompClient) {
@@ -384,6 +644,129 @@ export default {
 </script>
 
 <style scoped>
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.new-chat-btn {
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.new-chat-btn i {
+  margin-right: 5px;
+  font-weight: bold;
+}
+
+.user-search-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.search-results {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.search-result-item:hover {
+  background-color: #f5f5f5;
+}
+
+.search-result-item .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-info strong {
+  font-size: 14px;
+}
+
+.user-info span {
+  font-size: 12px;
+  color: #666;
+}
+
+.loading {
+  text-align: center;
+  padding: 10px;
+  color: #666;
+}
+
+.no-results {
+  text-align: center;
+  padding: 10px;
+  color: #999;
+}
+
+.cancel-btn {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 15px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.cancel-btn:hover {
+  background: #eaeaea;
+}
+
 .loading-contacts, .loading-messages {
   text-align: center;
   padding: 20px;
@@ -409,7 +792,6 @@ export default {
   cursor: not-allowed;
 }
 
-/* 原有样式保持不变 */
 .chat-container {
   display: flex;
   flex-direction: column;
@@ -424,60 +806,38 @@ export default {
 }
 
 .chat-sidebar {
-  width: 300px;
-  border-right: 1px solid #ddd;
+  width: 280px;
+  border-right: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
-  background-color: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: #fff;
 }
 
 .chat-header {
   padding: 15px;
-  border-bottom: 1px solid #eee;
-  background-color: #fafafa;
-}
-
-.search-container {
-  position: relative;
-  margin-top: 10px;
-}
-
-.search-container input {
-  width: 100%;
-  padding: 8px 15px 8px 35px;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  background-color: #f0f2f5;
-}
-
-.search-icon {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .contacts-list {
-  flex: 1;
   overflow-y: auto;
+  flex-grow: 1;
 }
 
 .contact-item {
   display: flex;
   padding: 12px 15px;
   cursor: pointer;
-  border-bottom: 1px solid #f5f5f5;
-  transition: background-color 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s;
 }
 
 .contact-item:hover {
-  background-color: #f9f9f9;
+  background: #f9f9f9;
 }
 
 .contact-item.active {
-  background-color: #e6f7ff;
+  background: #e6f7ff;
 }
 
 .contact-avatar {
@@ -486,27 +846,25 @@ export default {
 }
 
 .contact-avatar img {
-  width: 48px;
-  height: 48px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   object-fit: cover;
-  background-color: #f0f2f5;
 }
 
 .online-indicator {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 12px;
-  height: 12px;
-  background-color: #52c41a;
-  border: 2px solid white;
+  bottom: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  background: #4CAF50;
   border-radius: 50%;
+  border: 2px solid #fff;
 }
 
 .contact-info {
   flex: 1;
-  overflow: hidden;
   min-width: 0;
 }
 
@@ -514,44 +872,18 @@ export default {
   margin: 0 0 4px 0;
   font-size: 15px;
   font-weight: 500;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .last-message {
   color: #666;
   font-size: 13px;
-  white-space: nowrap;
+  margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin: 0;
-}
-
-.message-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  min-width: 60px;
-}
-
-.message-time {
-  font-size: 11px;
-  color: #999;
-  margin-bottom: 5px;
-}
-
-.unread-count {
-  background-color: #f5222d;
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: bold;
+  white-space: nowrap;
 }
 
 .chat-content {
