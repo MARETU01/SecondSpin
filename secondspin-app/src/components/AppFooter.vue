@@ -1,34 +1,5 @@
 <template>
   <footer class="app-footer">
-    <div class="container">
-      <div class="footer-section">
-        <h3>关于我们</h3>
-        <ul>
-          <li>公司简介</li>
-          <li>联系我们</li>
-          <li>加入我们</li>
-        </ul>
-      </div>
-      
-      <div class="footer-section">
-        <h3>帮助中心</h3>
-        <ul>
-          <li>交易流程</li>
-          <li>常见问题</li>
-          <li>安全保障</li>
-        </ul>
-      </div>
-      
-      <div class="footer-section">
-        <h3>关注我们</h3>
-        <div class="social-links">
-          <span>微信</span>
-          <span>微博</span>
-          <span>抖音</span>
-        </div>
-      </div>
-    </div>
-    
     <div class="copyright">
       © 2023 二手易 SecondHandEasy 版权所有
     </div>

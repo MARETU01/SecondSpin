@@ -1,6 +1,6 @@
 <template>
   <nav class="category-nav">
-    <div v-if="loading" class="loading">加载分类中...</div>
+    <div v-if="loading" class="loading">Load in category...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else class="category-grid">
       <div 
@@ -45,15 +45,15 @@ export default {
           this.categoryList.unshift({
             categoryId: 0,
             name: 'All',
-            description: '所有商品分类',
+            description: 'All Product Categories',
             iconUrl: ''
           })
         } else {
-          this.error = response.data.message || '获取分类失败'
+          this.error = response.data.message || 'Failure to get classification'
         }
       } catch (err) {
-        this.error = err.response?.data?.message || err.message || '请求分类时出错'
-        console.error('获取分类出错:', err)
+        this.error = err.response?.data?.message || err.message || 'An error occurred while requesting classification'
+        console.error('Get the classification error:', err)
         // 出错时使用默认分类
         this.categoryList = this.getDefaultCategories()
       } finally {
@@ -62,14 +62,7 @@ export default {
     },
     getDefaultCategories() {
       return [
-        { categoryId: 0, name: '全部', description: '所有商品分类' },
-        { categoryId: 1, name: '电子产品', description: '电子设备' },
-        { categoryId: 2, name: '服装', description: '服装配饰' },
-        { categoryId: 3, name: '家具', description: '家居用品' },
-        { categoryId: 4, name: '书籍', description: '图书教材' },
-        { categoryId: 5, name: '运动器材', description: '体育用品' },
-        { categoryId: 6, name: '母婴用品', description: '儿童用品' },
-        { categoryId: 7, name: '其他', description: '其他商品' }
+        { categoryId: 0, name: 'All', description: '' },
       ]
     }
   },
