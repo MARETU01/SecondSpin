@@ -1,7 +1,7 @@
 <template>
   <footer class="app-footer">
     <div class="copyright">
-      © 2023 二手易 SecondHandEasy 版权所有
+      © 2025 SecondSpin All rights reserved
     </div>
   </footer>
 </template>

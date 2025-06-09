@@ -2,20 +2,20 @@
   <div>
     <AppHeader />
     <div class="login-container">
-      <h2>登录</h2>
+      <h2>Login</h2>
       <form @submit.prevent="handleLogin">
         <div>
-          <label for="login-email">邮箱:</label>
+          <label for="login-email">Email:</label>
           <input v-model="loginForm.email" type="text" id="login-email" required>
         </div>
         <div>
-          <label for="login-password">密码:</label>
+          <label for="login-password">Password:</label>
           <input v-model="loginForm.password" type="password" id="login-password" required>
         </div>
-        <button type="submit">登录</button>
+        <button type="submit">Login</button>
       </form>
-      <p>还没有账号? <router-link to="/register">立即注册</router-link></p>
-      <p><router-link to="/reset-password">忘记密码?</router-link></p>
+      <p>No account yet? <router-link to="/register">Sign up Now</router-link></p>
+      <p><router-link to="/reset-password">Forgot password?</router-link></p>
     </div>
     <AppFooter />
   </div>
@@ -42,22 +42,22 @@ export default {
     handleLogin() {
       this.$http.post('/users/login', this.loginForm)
         .then(response => {
-          console.log('登录响应:', response.data);
+          console.log('Login response:', response.data);
           if (response.data.code === 1) {
             // 登录成功，存储token到localStorage
             localStorage.setItem('token', response.data.data);
             
-            alert('登录成功');
+            alert('Login success');
             // 跳转到根路径'/'
             this.$router.push('/');
           } else {
             // 登录失败，显示错误信息
-            alert(response.data.message || '登录失败，请重试');
+            alert(response.data.message || 'Login failed, please try again');
           }
         })
         .catch(error => {
-          console.error('登录错误:', error);
-          alert(error.response?.data?.message || '网络错误，请稍后重试');
+          console.error('Login error:', error);
+          alert(error.response?.data?.message || 'Network error, please try again later');
         });
     }
   }
@@ -65,7 +65,6 @@ export default {
 </script>
 
 <style scoped>
-/* 样式保持不变 */
 .login-container {
   max-width: 400px;
   margin: 40px auto;

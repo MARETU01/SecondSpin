@@ -2,28 +2,28 @@
   <div>
     <AppHeader />
     <div class="reset-password-container">
-      <h2>重置密码</h2>
+      <h2>Reset Password</h2>
       <form @submit.prevent="handleResetPassword">
         <div>
-          <label for="reset-email">邮箱:</label>
+          <label for="reset-email">Email:</label>
           <input v-model="resetForm.email" type="email" id="reset-email" required>
         </div>
         <div>
-          <label for="reset-new-password">新密码:</label>
+          <label for="reset-new-password">New password:</label>
           <input v-model="resetForm.newPassword" type="password" id="reset-new-password" required>
         </div>
         <div>
-          <label for="reset-confirm-password">确认新密码:</label>
+          <label for="reset-confirm-password">Confirm new password:</label>
           <input v-model="resetForm.confirmPassword" type="password" id="reset-confirm-password" required>
         </div>
         <div>
-          <label for="reset-verification">验证码:</label>
+          <label for="reset-verification">Verification code:</label>
           <input v-model="verification" type="text" id="reset-verification" required>
-          <button type="button" @click="sendVerificationCode" ref="verificationBtn">获取验证码</button>
+          <button type="button" @click="sendVerificationCode" ref="verificationBtn">Getting a CAPTCHA</button>
         </div>
-        <button type="submit">重置密码</button>
+        <button type="submit">Reset Password</button>
       </form>
-      <p><router-link to="/login">返回登录</router-link></p>
+      <p><router-link to="/login">Return to Login</router-link></p>
     </div>
     <AppFooter />
   </div>
@@ -51,31 +51,31 @@ export default {
   },
   methods: {
     sendVerificationCode() {
-      console.log('1. 方法开始执行');
+      console.log('1. The method starts executing');
       if (this.isSendingCode) return;
       this.isSendingCode = true;
-      console.log('2. 防重复点击逻辑通过');
+      console.log('2. Anti-repeated click logic passes');
 
       if (this.resetForm.newPassword !== this.resetForm.confirmPassword) {
-        alert('两次输入的新密码不一致'); 
+        alert('The new password entered twice does not match'); 
         this.isSendingCode = false;
         return;
       }
-      console.log('3. 密码验证通过，准备发送请求');
+      console.log('3. The password is validated and ready to send the request');
 
       this.$http.post('/users/forget-password/code', { email: this.resetForm.email })
         .then(response => {
-          console.log('验证码响应数据:', response.data);
+          console.log('Captcha response data:', response.data);
           if (response.data.code === 1) {
-            alert(response.data.message || '验证码发送成功'); 
+            alert(response.data.message || 'The CAPTCHA was sent successfully'); 
             this.startCountdown();
           } else {
-            alert(response.data.message || '发送验证码失败'); 
+            alert(response.data.message || 'Failed to send the CAPTCHA'); 
           }
         })
         .catch(error => {
-          console.error('验证码请求错误:', error);
-          alert('网络错误，请稍后重试');
+          console.error('Captcha request error:', error);
+          alert('Network error, please try again later');
         })
         .finally(() => {
           this.isSendingCode = false;
@@ -87,19 +87,19 @@ export default {
       const btn = this.$refs.verificationBtn;
       btn.disabled = true;
       const timer = setInterval(() => {
-        btn.textContent = `重新发送(${countdown})`;
+        btn.textContent = `resend(${countdown})`;
         countdown--;
         if (countdown < 0) {
           clearInterval(timer);
           btn.disabled = false;
-          btn.textContent = '获取验证码';
+          btn.textContent = 'Getting a CAPTCHA';
         }
       }, 1000);
     },
 
     handleResetPassword() {
       if (this.resetForm.newPassword !== this.resetForm.confirmPassword) {
-        alert('两次输入的新密码不一致');
+        alert('The new password entered twice does not match');
         return;
       }
 
@@ -114,18 +114,18 @@ export default {
         }
       })
         .then(response => {
-          console.log('重置密码响应数据:', response.data);
+          console.log('Reset password response data:', response.data);
           if (response.data.code === 1) {
-            if (confirm(response.data.message || '密码重置成功，请使用新密码登录')) { 
+            if (confirm(response.data.message || 'Password reset successfully, please login with the new password')) { 
               this.$router.push('/login');
             }
           } else {
-            alert(response.data.message || '密码重置失败');
+            alert(response.data.message || 'Password reset failed');
           }
         })
         .catch(error => {
-          console.error('重置密码请求错误:', error);
-          alert(error.response?.data?.message || '密码重置失败，请检查网络后重试');
+          console.error('Error in password reset request:', error);
+          alert(error.response?.data?.message || 'Password reset failed, please check the network and try again');
         });
     }
   }

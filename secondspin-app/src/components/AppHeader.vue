@@ -2,8 +2,7 @@
   <header class="app-header">
     <div class="container">
       <div class="logo" @click="$router.push('/')">
-        <h1>转转</h1>
-        <span>turnturn</span>
+        <h1>SecondSpin</h1>
       </div>
       
       <div class="user-actions">

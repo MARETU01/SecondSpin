@@ -2,41 +2,41 @@
   <div>
     <AppHeader />
     <div class="register-container">
-      <h2>注册</h2>
+      <h2>Registration</h2>
       <form @submit.prevent="handleRegister">
         <!-- 表单字段保持不变 -->
         <div>
-          <label for="register-username">用户名:</label>
+          <label for="register-username">User name:</label>
           <input v-model="registerForm.username" type="text" id="register-username" required>
         </div>
         <div>
-          <label for="register-realname">真实姓名:</label>
+          <label for="register-realname">Real name:</label>
           <input v-model="registerForm.realName" type="text" id="register-realname" required>
         </div>
         <div>
-          <label for="register-email">邮箱:</label>
+          <label for="register-email">Email:</label>
           <input v-model="registerForm.email" type="email" id="register-email" required>
         </div>
         <div>
-          <label for="register-phone">手机号:</label>
+          <label for="register-phone">Phone number:</label>
           <input v-model="registerForm.phone" type="tel" id="register-phone" required>
         </div>
         <div>
-          <label for="register-password">密码:</label>
+          <label for="register-password">Password:</label>
           <input v-model="registerForm.password" type="password" id="register-password" required>
         </div>
         <div>
-          <label for="register-confirm-password">确认密码:</label>
+          <label for="register-confirm-password">Confirm Password:</label>
           <input v-model="registerForm.confirmPassword" type="password" id="register-confirm-password" required>
         </div>
         <div>
-          <label for="register-verification">验证码:</label>
+          <label for="register-verification">Verification code:</label>
           <input v-model="verification" type="text" id="register-verification" required>
-          <button type="button" @click="sendVerificationCode" ref="verificationBtn">获取验证码</button>
+          <button type="button" @click="sendVerificationCode" ref="verificationBtn">Getting a CAPTCHA</button>
         </div>
-        <button type="submit">注册</button>
+        <button type="submit">Registration</button>
       </form>
-      <p>已有账号? <router-link to="/login">返回登录</router-link></p>
+      <p>Have an account? <router-link to="/login">Return to Login</router-link></p>
     </div>
     <AppFooter />
   </div>
@@ -67,31 +67,31 @@ export default {
   },
   methods: {
     sendVerificationCode() {
-      console.log('1. 方法开始执行');
+      console.log('1. The method starts executing');
       if (this.isSendingCode) return;
       this.isSendingCode = true;
-      console.log('2. 防重复点击逻辑通过');
+      console.log('2. Anti-repeated click logic passes');
 
       if (this.registerForm.password !== this.registerForm.confirmPassword) {
-        alert('两次输入的密码不一致'); // 原生alert
+        alert('The password is not the same'); // 原生alert
         this.isSendingCode = false;
         return;
       }
-      console.log('3. 密码验证通过，准备发送请求');
+      console.log('3. The password is validated and ready to send the request');
 
       this.$http.post('/users/register/code', this.registerForm)
         .then(response => {
-          console.log('验证码响应数据:', response.data);
+          console.log('Captcha response data:', response.data);
           if (response.data.code === 1) {
-            alert(response.data.message || '验证码发送成功'); // 成功提示
+            alert(response.data.message || 'The CAPTCHA was sent successfully'); // 成功提示
             this.startCountdown();
           } else {
-            alert(response.data.message || '发送验证码失败'); // 失败提示
+            alert(response.data.message || 'Failed to send the CAPTCHA'); // 失败提示
           }
         })
         .catch(error => {
-          console.error('验证码请求错误:', error);
-          alert('网络错误，请稍后重试');
+          console.error('Captcha request error:', error);
+          alert('Network error, please try again later');
         })
         .finally(() => {
           this.isSendingCode = false;
@@ -103,19 +103,19 @@ export default {
       const btn = this.$refs.verificationBtn;
       btn.disabled = true;
       const timer = setInterval(() => {
-        btn.textContent = `重新发送(${countdown})`;
+        btn.textContent = `resend(${countdown})`;
         countdown--;
         if (countdown < 0) {
           clearInterval(timer);
           btn.disabled = false;
-          btn.textContent = '获取验证码';
+          btn.textContent = 'Getting a CAPTCHA';
         }
       }, 1000);
     },
     
     handleRegister() {
       if (this.registerForm.password !== this.registerForm.confirmPassword) {
-        alert('两次输入的密码不一致');
+        alert('The password is not the same');
         return;
       }
 
@@ -133,18 +133,18 @@ export default {
         }
       })
         .then(response => {
-          console.log('注册响应数据:', response.data);
+          console.log('Registering Response data:', response.data);
           if (response.data.code === 1) {
-            if (confirm(response.data.message || '注册成功，请登录')) { // 带确认按钮的弹窗
+            if (confirm(response.data.message || 'Successful registration, please log in')) { // 带确认按钮的弹窗
               this.$router.push('/login');
             }
           } else {
-            alert(response.data.message || '注册失败');
+            alert(response.data.message || 'Registration failed');
           }
         })
         .catch(error => {
-          console.error('注册请求错误:', error);
-          alert(error.response?.data?.message || '注册失败，请检查网络后重试');
+          console.error('Registration request error:', error);
+          alert(error.response?.data?.message || 'Registration failed. Please check the network and try again');
         });
     }
   }
@@ -152,7 +152,6 @@ export default {
 </script>
 
 <style scoped>
-/* 样式保持不变 */
 .register-container {
   max-width: 400px;
   margin: 40px auto;

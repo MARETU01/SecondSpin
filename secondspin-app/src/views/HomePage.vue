@@ -183,7 +183,6 @@ export default {
 </script>
 
 <style scoped>
-/* 保持原有的样式不变 */
 .home {
   display: flex;
   flex-direction: column;
