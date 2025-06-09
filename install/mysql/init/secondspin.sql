@@ -97,7 +97,7 @@ CREATE TABLE orders (
     product_id INT NOT NULL,
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     price DECIMAL(10, 2) NOT NULL,
-    shipping_address INT NOT NULL,
+    shipping_address INT,
     status ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled', 'refunded') DEFAULT 'pending',
     deleted BOOLEAN DEFAULT FALSE,
     pay_id VARCHAR(255),
