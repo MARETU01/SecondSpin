@@ -572,8 +572,17 @@ export default {
       this.$http.post('/payment/create', paymentRequest)
           .then(response => {
             // 直接从响应中获取数据，不需要检查code
-            const paymentUrl = response.data.paymentUrl;
-            window.location.href = paymentUrl; // 跳转到支付宝支付页面
+            // const paymentUrl = response.data.paymentUrl;
+            // window.location.href = paymentUrl; // 跳转到支付宝支付页面
+            console.log(response.data);
+            if (response.data.code === 1) {
+              const newWindow = window.open('', '_blank');
+              // 将返回的HTML写入新窗口
+              newWindow.document.open();
+              newWindow.document.write(response.data.data); // 假设返回的HTML在data.data中
+              newWindow.document.close();
+            }
+            
           })
           .catch(error => {
             console.error('支付错误:', error);
