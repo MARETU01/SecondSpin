@@ -8,9 +8,9 @@ services:
       TZ: Asia/Shanghai
       MYSQL_ROOT_PASSWORD: "secondspin123456"
     volumes:
-      - ./mysql/secondspin/data:/var/lib/mysql
-      - ./mysql/secondspin/conf:/etc/mysql/conf.d
-      - ./mysql/secondspin/init:/docker-entrypoint-initdb.d
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/conf:/etc/mysql/conf.d
+      - ./mysql/init:/docker-entrypoint-initdb.d
     networks:
       - secondspin_network
     restart: unless-stopped

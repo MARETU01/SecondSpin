@@ -2,6 +2,7 @@ package com.secondspin.order.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.secondspin.api.dto.PaymentDTO;
 import com.secondspin.common.dto.JwtUser;
 import com.secondspin.common.dto.PageDTO;
 import com.secondspin.common.dto.QueryDTO;
@@ -60,13 +61,13 @@ public class OrderController {
     }
 
     @PutMapping("/{id}")
-    public Boolean payOrder(@PathVariable Integer id, Long alipayTradeNo, LocalDateTime paymentTime) {
+    public Boolean payOrder(@PathVariable Integer id, @RequestBody PaymentDTO paymentDTO) {
         return ordersService
                 .lambdaUpdate()
                 .eq(Orders::getOrderId, id)
                 .set(Orders::getStatus, OrderStatus.SHIPPED)
-                .set(Orders::getPayId, alipayTradeNo)
-                .set(Orders::getPayTime, paymentTime)
+                .set(Orders::getPayId, paymentDTO.getAlipayTradeNo())
+                .set(Orders::getPayTime, paymentDTO.getPaymentTime())
                 .update();
     }
 }

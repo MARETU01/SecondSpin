@@ -100,7 +100,7 @@ CREATE TABLE orders (
     shipping_address INT NOT NULL,
     status ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled', 'refunded') DEFAULT 'pending',
     deleted BOOLEAN DEFAULT FALSE,
-    pay_id INT,
+    pay_id VARCHAR(255),
     pay_time DATETIME,
     FOREIGN KEY (buyer_id) REFERENCES users(user_id),
     FOREIGN KEY (seller_id) REFERENCES users(user_id),

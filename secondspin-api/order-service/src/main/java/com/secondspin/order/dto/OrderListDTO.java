@@ -26,7 +26,7 @@ public class OrderListDTO {
 
     private OrderStatus status;
 
-    private Integer payId;
+    private String payId;
 
     private LocalDateTime payTime;
 }

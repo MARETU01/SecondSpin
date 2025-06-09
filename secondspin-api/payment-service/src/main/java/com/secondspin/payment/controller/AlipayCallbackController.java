@@ -2,6 +2,7 @@ package com.secondspin.payment.controller;
 
 import com.alipay.api.internal.util.AlipaySignature;
 import com.secondspin.api.client.OrderClient;
+import com.secondspin.api.dto.PaymentDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -59,7 +60,10 @@ public class AlipayCallbackController {
                     // orderService.changeOrderPaySuccess(tradeNo);
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                     LocalDateTime paymentTime = LocalDateTime.parse(gmtPayment, formatter);
-                    orderClient.payOrder(Integer.valueOf(tradeNo), Long.valueOf(alipayTradeNo), paymentTime);
+                    PaymentDTO paymentDTO = new PaymentDTO();
+                    paymentDTO.setAlipayTradeNo(alipayTradeNo)
+                            .setPaymentTime(paymentTime);
+                    orderClient.payOrder(Integer.valueOf(tradeNo), paymentDTO);
                 }
             }
 

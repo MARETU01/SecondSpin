@@ -42,16 +42,17 @@ public class AliPayService {
         String form = alipayClient.pageExecute(request).getBody();
         log.info("支付宝支付表单已生成：\n{}", form);
 
-        if (response == null || !response.isSuccess()) {
-            log.error("支付宝调用失败: {}", response.getSubMsg());
-            throw new AlipayApiException("支付宝调用失败：" + response.getSubMsg());
-        }
-
-        // 提取跳转 URL
-        String paymentUrl = HtmlFormUtils.extractActionUrl(response.getBody());
-        log.info("生成的支付宝支付跳转 URL: {}", paymentUrl);
-
-        return paymentUrl;
+//        if (response == null || !response.isSuccess()) {
+//            log.error("支付宝调用失败: {}", response.getSubMsg());
+//            throw new AlipayApiException("支付宝调用失败：" + response.getSubMsg());
+//        }
+//
+//        // 提取跳转 URL
+//        String paymentUrl = HtmlFormUtils.extractActionUrl(response.getBody());
+//        log.info("生成的支付宝支付跳转 URL: {}", paymentUrl);
+//
+//        return paymentUrl;
+        return form;
     }
 }
 //public class AliPayService {

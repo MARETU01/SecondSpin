@@ -48,7 +48,7 @@ public class Orders implements Serializable {
 
     private OrderStatus status;
 
-    private Integer payId;
+    private String payId;
 
     private LocalDateTime payTime;
 
