@@ -56,7 +56,7 @@ export default {
     },
     getProductImageUrl(imageName) {
       if (!imageName) {
-        return '/images/products/8e9e7e86de484a269a143d7e726f8f4c.jpg'
+        return '/images/products/default.png'
       }
       return `/images/products/${imageName}`
     },
