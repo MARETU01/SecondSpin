@@ -4,7 +4,7 @@
 
     <div class="container">
       <div v-if="loading" class="loading">
-        <i class="fa fa-spinner fa-spin"></i> 加载中...
+        <i class="fa fa-spinner fa-spin"></i> Loading...
       </div>
 
       <div v-else-if="error" class="error">
@@ -18,10 +18,10 @@
           </div>
           <div class="item-status">
             <span class="status-tag" :class="product.status === 'available' ? 'available' : 'unavailable'">
-              {{ product.status === 'available' ? '可购买' : '已售出' }}
+              {{ product.status === 'available' ? 'purchasable' : 'sold out' }}
             </span>
             <span class="condition-tag" :class="product.condition === 'new' ? 'new' : 'used'">
-              {{ product.condition === 'new' ? '全新' : '二手' }}
+              {{ product.condition === 'new' ? 'brand new' : 'second-hand' }}
             </span>
           </div>
         </div>
@@ -57,21 +57,21 @@
             <div class="price-info">
               <div class="current-price">¥{{ product.price.toFixed(2) }}</div>
               <div class="original-price" v-if="product.originalPrice > product.price">
-                原价: ¥{{ product.originalPrice.toFixed(2) }}
+                Original cost: ¥{{ product.originalPrice.toFixed(2) }}
               </div>
               <div class="discount" v-if="product.originalPrice > product.price">
-                节省: ¥{{ (product.originalPrice - product.price).toFixed(2) }}
+                Save: ¥{{ (product.originalPrice - product.price).toFixed(2) }}
               </div>
             </div>
 
             <div class="stats-info">
-              <span class="stat-item"><i class="fa fa-eye"></i> {{ product.viewCount }} 次浏览</span>
-              <span class="stat-item"><i class="fa fa-heart"></i> {{ product.favoriteCount }} 人收藏</span>
-              <span class="stat-item"><i class="fa fa-calendar"></i> 发布于 {{ formatDate(product.postDate) }}</span>
+              <span class="stat-item"><i class="fa fa-eye"></i> {{ product.viewCount }} Views</span>
+              <span class="stat-item"><i class="fa fa-heart"></i> {{ product.favoriteCount }} Collections</span>
+              <span class="stat-item"><i class="fa fa-calendar"></i> Posted on {{ formatDate(product.postDate) }}</span>
             </div>
 
             <div class="category-info">
-              <span class="category-label">分类:</span>
+              <span class="category-label">Classification:</span>
               <span class="category-name">{{ product.categoryName }}</span>
 
             </div>
@@ -80,7 +80,7 @@
               <div class="seller-avatar">
                 <img
                     :src="getImageUrl(product.sellerAvatarUrl)"
-                    alt="卖家头像"
+                    alt="Seller avatar"
                     @error="handleAvatarError($event)"
                 >
               </div>
@@ -88,27 +88,27 @@
                 <div class="seller-name">{{ product.sellerName }}</div>
                 <div class="seller-id">ID: {{ product.sellerId }}</div>
               </div>
-              <button class="contact-seller">
-                <i class="fa fa-comments"></i> 联系卖家
+              <button class="contact-seller" @click="contactSeller">
+                <i class="fa fa-comments"></i> Contact Seller
               </button>
             </div>
 
             <div class="action-buttons">
               <button class="btn-favorite" :class="{ favorited: product.ifFavorite }" @click="toggleFavorite">
                 <i class="fa" :class="product.ifFavorite ? 'fa-heart' : 'fa-heart-o'"></i>
-                {{ product.ifFavorite ? '已收藏' : '收藏' }}
+                {{ product.ifFavorite ? 'Already collected' : 'Collect' }}
               </button>
 
-              <button class="btn-buy" :disabled="product.status !== 'available'">
-                <i class="fa fa-shopping-cart"></i> 立即购买
+              <button class="btn-buy" :disabled="product.status !== 'available'" @click="createOrder">
+                <i class="fa fa-shopping-cart"></i> Buy now!
               </button>
             </div>
           </div>
         </div>
 
         <div class="item-description">
-          <h3>商品描述</h3>
-          <p>{{ product.description || '暂无商品描述' }}</p>
+          <h3>Product Description</h3>
+          <p>{{ product.description || 'Nothing here~' }}</p>
         </div>
 
 
@@ -192,6 +192,55 @@ export default {
     this.fetchItemInfo();
   },
   methods: {
+
+    contactSeller(){
+      const user = JSON.parse(localStorage.getItem('userInfo'));
+      if (!user) {
+        alert('Please login first');
+        return;
+      }
+      let message = {
+        productId: this.product.productId,
+        receiverId: this.product.sellerId
+      }
+      this.$http.post('/messages', message)
+          .then(response => {
+            if (response.data.code === 1) {
+              this.$router.push('/messages');
+            } else {
+              alert(response.data.message || 'Something wrong');
+            }
+          })
+          .catch(error => {
+            console.error('error', error);
+            alert(error.response?.data?.message || 'internet error');
+          });
+
+    },
+    createOrder(){
+      const user = JSON.parse(localStorage.getItem('userInfo'));
+      if (!user) {
+        alert('Please login first');
+        return;
+      }
+      let order = {
+        productId: this.product.productId,
+        price: this.product.price,
+        sellerId: this.product.sellerId
+      }
+      this.$http.post('/orders', order)
+          .then(response => {
+            if (response.data.code === 1) {
+              this.$router.push(`/profile/${user.userId}`);
+            } else {
+              alert(response.data.message || 'Something wrong');
+            }
+          })
+          .catch(error => {
+            console.error('error', error);
+            alert(error.response?.data?.message || 'internet error');
+          });
+    },
     async fetchItemInfo() {
       this.loading = true;
       this.error = null;
@@ -203,11 +252,11 @@ export default {
         if (response.data && response.data.code === 1) {
           this.product = response.data.data;
         } else {
-          this.error = response.data.message || '获取商品信息失败';
+          this.error = response.data.message || 'database error';
         }
       } catch (error) {
         console.error('获取商品信息错误:', error);
-        this.error = error.response?.data?.message || '网络错误，请稍后重试';
+        this.error = error.response?.data?.message || 'internet error';
       } finally {
         this.loading = false;
       }
@@ -221,7 +270,7 @@ export default {
       if (!dateString) return '';
 
       const date = new Date(dateString);
-      return date.toLocaleDateString('zh-CN', {
+      return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
