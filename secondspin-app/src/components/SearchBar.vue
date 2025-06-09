@@ -4,7 +4,7 @@
       <input 
         type="text" 
         v-model="searchQuery"
-        placeholder="搜索你想要的商品..."
+        placeholder="Search for the product you want..."
         @keyup.enter="handleSearch"
       />
       <button class="search-btn" @click="handleSearch">

@@ -9,15 +9,15 @@
       <div class="user-actions">
         <div class="auth-section">
           <button v-if="!isLoggedIn" class="btn login-btn" @click="$router.push('/login')">
-            登录/注册
+            Login/Register
           </button>
           <div v-else class="logged-in-section">
             <button class="btn message-btn" @click="$router.push('/messages')">
-              <i class="icon">💬</i> 消息
+              <i class="icon">💬</i> Message
               <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
             </button>
             <button class="btn publish-btn" @click="$router.push('/create')">
-              <i class="icon">+</i> 发布商品
+              <i class="icon">+</i> Publish
             </button>
             <div class="user-avatar" @click="gotoProfile">
               <img :src="userAvatar" alt="用户头像" />
@@ -86,7 +86,7 @@ export default {
           this.unreadCount = response.data.data || 0
         }
       }).catch(error => {
-        console.error('获取未读消息失败:', error)
+        console.error('Failed to get unread messages:', error)
         // 如果token失效，执行登出
         if (error.response && error.response.status === 401) {
           this.handleLogout()

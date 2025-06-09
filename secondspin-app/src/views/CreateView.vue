@@ -2,27 +2,27 @@
   <div class="post-product-page">
     <Header></Header>
     <div class="container">
-      <h1>发布商品</h1>
+      <h1>Publishing products</h1>
 
       <form @submit.prevent="submitForm" class="product-form">
         <!-- 商品基本信息 -->
         <div class="form-section">
-          <h2>商品信息</h2>
+          <h2>Product information</h2>
           <div class="form-group">
-            <label for="title">商品标题*</label>
+            <label for="title">Product Title*</label>
             <input type="text" id="title" v-model="product.title" required maxlength="50" placeholder="请输入商品标题（最多50字）">
           </div>
 
           <div class="form-group">
-            <label for="description">商品描述*</label>
+            <label for="description">Product Description*</label>
             <textarea id="description" v-model="product.description" required maxlength="500" rows="5"
-              placeholder="请输入商品详细描述（最多500字）"></textarea>
+              placeholder="Please enter a detailed description of the product (maximum 500 words)"></textarea>
           </div>
 
           <div class="form-group">
-            <label for="category">商品分类*</label>
+            <label for="category">Product classification*</label>
             <select id="category" v-model="product.categoryId" required>
-              <option value="" disabled>请选择分类</option>
+              <option value="" disabled>Please select category</option>
               <option v-for="category in categories" :key="category.categoryId" :value="category.categoryId">
                 {{ category.name }}
               </option>
@@ -32,24 +32,24 @@
 
         <!-- 价格信息 -->
         <div class="form-section">
-          <h2>价格信息</h2>
+          <h2>Price information</h2>
           <div class="form-group">
-            <label for="price">现价*</label>
+            <label for="price">Current price*</label>
             <input type="number" id="price" v-model.number="product.price" min="0" step="0.01" required
-              placeholder="请输入商品现价">
+              placeholder="Please enter the current price of the goods">
           </div>
 
           <div class="form-group">
-            <label for="originalPrice">原价</label>
+            <label for="originalPrice">Original price</label>
             <input type="number" id="originalPrice" v-model.number="product.originalPrice" min="0" step="0.01"
-              placeholder="请输入商品原价（可选）">
+              placeholder="Please enter the original price (optional)">
           </div>
         </div>
 
         <!-- 商品图片 -->
         <div class="form-section">
-          <h2>商品图片</h2>
-          <p class="hint">最多可上传4张图片，第一张将作为主图</p>
+          <h2>Product image</h2>
+          <p class="hint">A maximum of 4 images can be uploaded and the first image will be used as the main image</p>
 
           <div class="image-upload-grid">
             <div class="image-upload-box" v-for="i in 4" :key="i">
@@ -57,13 +57,13 @@
                 <img v-if="previewImages[i - 1]" :src="previewImages[i - 1]" class="preview-image">
                 <div v-else class="upload-placeholder">
                   <span>+</span>
-                  <p>点击上传图片</p>
+                  <p>Click upload image</p>
                 </div>
               </label>
               <input type="file" :id="'file' + i" accept="image/*" @change="handleImageUpload($event, i - 1)"
                 class="file-input">
               <button v-if="previewImages[i - 1]" type="button" @click="removeImage(i - 1)" class="remove-btn">
-                删除
+                Delete
               </button>
             </div>
           </div>
@@ -71,7 +71,7 @@
 
         <!-- 商品状况 -->
         <div class="form-section">
-          <h2>商品状况</h2>
+          <h2>Status of commodities</h2>
           <div class="condition-options">
             <label v-for="(label, value) in conditionOptions" :key="value"
               :class="{ active: product.condition === value }">
@@ -84,7 +84,7 @@
         <!-- 提交按钮 -->
         <div class="form-actions">
           <button type="submit" :disabled="isSubmitting" class="submit-btn">
-            {{ isSubmitting ? '发布中...' : '发布商品' }}
+            {{ isSubmitting ? 'On the way...' : 'Publishing products' }}
           </button>
         </div>
       </form>
@@ -118,11 +118,11 @@ export default {
       previewImages: Array(4).fill(null), // 预览图片
       imageFiles: Array(4).fill(null),    // 实际文件对象
       conditionOptions: {
-        'new': '全新',
-        'like-new': '95成新',
-        'good': '9成新',
-        'fair': '8成新',
-        'poor': '7成新'
+        'new': 'new',
+        'like-new': 'like-new',
+        'good': 'good',
+        'fair': 'fair',
+        'poor': 'poor'
       },
       isSubmitting: false,
       error: null
@@ -139,7 +139,7 @@ export default {
           this.categories = response.data.data
         }
       } catch (err) {
-        console.error('获取分类失败:', err)
+        console.error('Failed to get classification:', err)
       }
     },
 
@@ -149,13 +149,13 @@ export default {
 
       // 验证文件类型
       if (!file.type.startsWith('image/')) {
-        alert('请上传图片文件')
+        alert('Please upload the image file')
         return
       }
 
       // 验证文件大小
       if (file.size > 5 * 1024 * 1024) {
-        alert('图片大小不能超过5MB')
+        alert('The image size should not exceed 5MB')
         return
       }
 
@@ -233,15 +233,15 @@ export default {
 
         // 处理响应
         if (response.data && response.data.code === 1) {
-          alert('商品发布成功！');
+          alert('Product release success!');
           this.$router.push(`/iteminfo/${response.data.data}`);
         } else {
-          this.error = response.data.message || '发布商品失败';
+          this.error = response.data.message || 'Failure to publish products';
         }
         
       } catch(err) {
-        console.error('发布商品出错:', err);
-        this.error = err.response?.data?.message || err.message || '发布商品时出错';
+        console.error('Error publishing product:', err);
+        this.error = err.response?.data?.message || err.message || 'An error occurred while publishing a product';
       } finally {
         this.isSubmitting = false;
       }

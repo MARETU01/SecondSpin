@@ -9,10 +9,10 @@
         <h2>{{ currentCategory.name }}</h2>
         <p>{{ currentCategory.description }}</p>
       </div>
-      <h2 v-else-if="searchQuery">搜索结果: {{ searchQuery }}</h2>
-      <h2 v-else>热门商品</h2>
+      <h2 v-else-if="searchQuery">Search results: {{ searchQuery }}</h2>
+      <h2 v-else>Hot items</h2>
       
-      <div v-if="loadingProducts" class="loading">加载中...</div>
+      <div v-if="loadingProducts" class="loading">Loading...</div>
       <div v-else-if="productError" class="error">{{ productError }}</div>
       <div v-else class="product-grid">
         <ProductCard 
@@ -29,14 +29,14 @@
           :disabled="pagination.currentPage === 1" 
           @click="changePage(pagination.currentPage - 1)"
         >
-          上一页
+          Previous Page
         </button>
-        <span>第 {{ pagination.currentPage }} 页 / 共 {{ Math.ceil(pagination.total / pagination.pageSize) }} 页</span>
+        <span>Page {{ pagination.currentPage }}  /  {{ Math.ceil(pagination.total / pagination.pageSize) }} pages in total</span>
         <button 
           :disabled="pagination.currentPage * pagination.pageSize >= pagination.total" 
           @click="changePage(pagination.currentPage + 1)"
         >
-          下一页
+          Next page
         </button>
       </div>
     </div>
@@ -115,11 +115,11 @@ export default {
           this.products = response.data.data.pageDTO.data || []
           this.pagination.total = response.data.data.pageDTO.total || 0
         } else {
-          this.productError = response.data.message || '获取分类商品失败'
+          this.productError = response.data.message || 'Failed to get classifieds'
         }
       } catch (err) {
-        this.productError = err.response?.data?.message || err.message || '请求分类商品时出错'
-        console.error('获取分类商品出错:', err)
+        this.productError = err.response?.data?.message || err.message || 'An error occurred while requesting classifieds'
+        console.error('Error in getting classifieds:', err)
       } finally {
         this.loadingProducts = false
       }
@@ -152,11 +152,11 @@ export default {
           this.products = response.data.data.data || []
           this.pagination.total = response.data.data.total || 0
         } else {
-          this.productError = response.data.message || '获取商品列表失败'
+          this.productError = response.data.message || 'Failed to get the list of products'
         }
       } catch (err) {
-        this.productError = err.response?.data?.message || err.message || '请求商品列表时出错'
-        console.error('获取商品列表出错:', err)
+        this.productError = err.response?.data?.message || err.message || 'An error occurred while requesting a list of products'
+        console.error('Error getting the list of products:', err)
       } finally {
         this.loadingProducts = false
       }
