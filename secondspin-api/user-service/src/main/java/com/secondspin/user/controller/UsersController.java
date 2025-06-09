@@ -148,15 +148,13 @@ public class UsersController {
     @GetMapping("/search")
     public Result<List<Users>> searchUsers(@RequestParam String search) {
         try {
-            // 搜索
-            List<Users> allUsers = usersService.list(); // 获取所有用户
+            List<Users> allUsers = usersService.list();
             List<Users> results = new ArrayList<>();
 
             String lowerSearch = search.toLowerCase();
             for (Users user : allUsers) {
                 if (user.getUsername().toLowerCase().contains(lowerSearch) ||
                         user.getEmail().toLowerCase().contains(lowerSearch)) {
-                    // 创建脱敏副本
                     Users safeUser = new Users();
                     safeUser.setUserId(user.getUserId());
                     safeUser.setUsername(user.getUsername());

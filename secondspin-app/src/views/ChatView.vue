@@ -4,23 +4,23 @@
     <div class="chat-main">
       <div class="chat-sidebar">
         <div class="chat-header">
-          <h2>最近联系</h2>
+          <h2>Recent Chats</h2>
           <button class="new-chat-btn" @click="showUserSearch = true">
-            <i>+</i> 新建聊天
+            <i>+</i> New Chat
           </button>
         </div>
 
-        <!-- 用户搜索模态框 -->
+        <!-- User search modal -->
         <div v-if="showUserSearch" class="user-search-modal">
           <div class="modal-content">
-            <h3>搜索用户</h3>
+            <h3>Search Users</h3>
             <input
                 type="text"
                 v-model="userSearchQuery"
-                placeholder="输入用户名或邮箱（输完后请按回车）"
+                placeholder="Enter username or email (press Enter to search)"
                 @keyup.enter="searchUsers"
             >
-            <div v-if="searchingUsers" class="loading">搜索中...</div>
+            <div v-if="searchingUsers" class="loading">Searching...</div>
             <div v-else-if="searchResults.length > 0" class="search-results">
               <div
                   v-for="user in searchResults"
@@ -36,19 +36,19 @@
               </div>
             </div>
             <div v-else-if="userSearchQuery" class="no-results">
-              未找到匹配的用户
+              No matching users found
             </div>
-            <button class="cancel-btn" @click="showUserSearch = false">取消</button>
+            <button class="cancel-btn" @click="showUserSearch = false">Cancel</button>
           </div>
         </div>
 
         <div class="contacts-list">
           <div v-if="loadingContacts" class="loading-contacts">
-            <i>⏳</i> 加载联系人中...
+            <i>⏳</i> Loading contacts...
           </div>
 
           <div v-else-if="contacts.length === 0" class="empty-contacts">
-            <i>👤</i> 暂无聊天记录
+            <i>👤</i> No chat history
           </div>
 
           <div
@@ -81,7 +81,7 @@
               </div>
               <div>
                 <h3>{{ activeContactData.username }}</h3>
-                <p class="online-status">{{ onlineUsers.includes(activeContactData.userId) ? '在线' : '离线' }}</p>
+                <p class="online-status">{{ onlineUsers.includes(activeContactData.userId) ? 'Online' : 'Offline' }}</p>
               </div>
             </div>
             <div class="chat-actions">
@@ -92,7 +92,7 @@
 
           <div class="messages-container" ref="messagesContainer">
             <div v-if="loadingMessages" class="loading-messages">
-              <i>⏳</i> 加载消息中...
+              <i>⏳</i> Loading messages...
             </div>
 
             <div
@@ -119,7 +119,7 @@
             <input
                 type="text"
                 v-model="newMessage"
-                placeholder="输入消息..."
+                placeholder="Type a message..."
                 @keyup.enter="sendMessage"
             >
             <button class="send-btn" @click="sendMessage" :disabled="!newMessage.trim()">
@@ -131,9 +131,9 @@
         <div v-else class="empty-chat">
           <div class="empty-content">
             <i class="chat-icon">💬</i>
-            <h3 v-if="newChatPartner">与 {{ newChatPartner.username }} 开始聊天</h3>
-            <h3 v-else>选择一个聊天</h3>
-            <p>开始与二手平台上的用户交流吧！</p>
+            <h3 v-if="newChatPartner">Start chatting with {{ newChatPartner.username }}</h3>
+            <h3 v-else>Select a chat</h3>
+            <p>Start communicating with users on our platform!</p>
           </div>
         </div>
       </div>
@@ -160,7 +160,7 @@ export default {
     }
   },
   data() {
-    // 获取用户信息
+    // Get user information
     let currentUser = { userId: 0 };
     try {
       const userInfo = localStorage.getItem('userInfo');
@@ -168,7 +168,7 @@ export default {
         currentUser = JSON.parse(userInfo);
       }
     } catch (e) {
-      console.error('解析用户信息失败:', e);
+      console.error('Failed to parse user info:', e);
     }
 
     return {
@@ -183,14 +183,14 @@ export default {
       currentUser,
       defaultAvatar: require('../../public/images/avatar/default.png'),
 
-      // 新建聊天相关状态
+      // New chat related states
       showUserSearch: false,
       userSearchQuery: '',
       searchingUsers: false,
       searchResults: [],
       newChatPartner: null,
 
-      // 路由参数
+      // Route parameter
       routeUserId: null
     }
   },
@@ -198,14 +198,14 @@ export default {
     activeContactData() {
       return this.contacts.find(c => c.userId === this.activeContact) || null;
     },
-    // 计算属性：获取带有token的头部
+    // Computed property: headers with token
     headers() {
       const token = localStorage.getItem('token');
       return token ? { 'SecondSpin': token } : {};
     }
   },
   watch: {
-    // 监听路由变化
+    // Watch route changes
     '$route'(to) {
       if (to.query.userId) {
         this.routeUserId = parseInt(to.query.userId);
@@ -230,17 +230,17 @@ export default {
       this.newChatPartner = null;
     },
 
-    // 处理路由参数中的用户ID
+    // Handle user ID from route parameters
     async handleRouteUserId() {
       if (!this.routeUserId) return;
 
-      // 检查是否已经在联系人中
+      // Check if already in contacts
       const existingContact = this.contacts.find(c => c.userId === this.routeUserId);
 
       if (existingContact) {
         this.selectContact(existingContact);
       } else {
-        // 获取用户信息
+        // Get user information
         try {
           const token = localStorage.getItem('token');
           if (!token) return;
@@ -257,7 +257,7 @@ export default {
               avatarUrl: user.avatarUrl
             };
 
-            // 创建新的联系人项
+            // Create new contact item
             const newContact = {
               userId: user.userId,
               username: user.username,
@@ -267,14 +267,14 @@ export default {
               unreadCount: 0
             };
 
-            // 添加到联系人列表
+            // Add to contacts list
             this.contacts.unshift(newContact);
-            // 选中该联系人
+            // Select this contact
             this.selectContact(newContact);
           }
         } catch (error) {
-          console.error('获取用户信息失败:', error);
-          alert('无法获取用户信息，请稍后重试');
+          console.error('Failed to get user info:', error);
+          alert('Unable to get user information, please try again later');
         }
       }
     },
@@ -298,12 +298,12 @@ export default {
             lastTime: contact.lastMessageTime
           }));
 
-          // 按最后消息时间排序（最新在上）
+          // Sort by last message time (newest first)
           this.contacts.sort((a, b) => {
             return new Date(b.lastTime) - new Date(a.lastTime);
           });
 
-          // 处理路由参数中的用户ID
+          // Handle user ID from route parameters
           if (this.routeUserId) {
             this.handleRouteUserId();
           } else if (this.contacts.length > 0) {
@@ -311,13 +311,13 @@ export default {
           }
         }
       } catch (error) {
-        console.error('获取联系人失败:', error);
+        console.error('Failed to get contacts:', error);
       } finally {
         this.loadingContacts = false;
       }
     },
 
-    // 搜索用户
+    // Search users
     async searchUsers() {
       if (!this.userSearchQuery.trim()) {
         this.searchResults = [];
@@ -328,7 +328,7 @@ export default {
         this.searchingUsers = true;
         const token = localStorage.getItem('token');
         if (!token) {
-          alert('请先登录');
+          alert('Please log in first');
           return;
         }
 
@@ -341,43 +341,43 @@ export default {
           }
         });
 
-        console.log('搜索响应:', response);
+        console.log('Search response:', response);
 
         if (response.data?.code === 1 && response.data.data) {
-          // 过滤掉当前用户
+          // Filter out current user
           this.searchResults = response.data.data.filter(
               user => user.userId !== this.currentUser.userId
           );
         } else {
           this.searchResults = [];
-          console.warn('未收到有效数据', response.data);
+          console.warn('No valid data received', response.data);
         }
       } catch (error) {
-        console.error('搜索用户失败:', error);
+        console.error('Failed to search users:', error);
         this.searchResults = [];
 
-        // 显示错误信息
+        // Show error message
         if (error.response) {
-          console.error('响应数据:', error.response.data);
-          console.error('状态码:', error.response.status);
-          alert(`搜索失败: ${error.response.data.message || error.response.statusText}`);
+          console.error('Response data:', error.response.data);
+          console.error('Status code:', error.response.status);
+          alert(`Search failed: ${error.response.data.message || error.response.statusText}`);
         } else {
-          alert('网络错误，请检查连接');
+          alert('Network error, please check your connection');
         }
       } finally {
         this.searchingUsers = false;
       }
     },
 
-    // 开始新聊天
+    // Start new chat
     startNewChat(user) {
-      // 检查是否已经在联系人中
+      // Check if already in contacts
       const existingContact = this.contacts.find(c => c.userId === user.userId);
 
       if (existingContact) {
         this.selectContact(existingContact);
       } else {
-        // 创建新的联系人项
+        // Create new contact item
         const newContact = {
           userId: user.userId,
           username: user.username,
@@ -387,13 +387,13 @@ export default {
           unreadCount: 0
         };
 
-        // 添加到联系人列表
+        // Add to contacts list
         this.contacts.unshift(newContact);
-        // 选中该联系人
+        // Select this contact
         this.selectContact(newContact);
       }
 
-      // 关闭搜索模态框
+      // Close search modal
       this.showUserSearch = false;
       this.userSearchQuery = '';
       this.searchResults = [];
@@ -412,11 +412,11 @@ export default {
 
         if (response.data?.code === 1) {
           this.messages = response.data.data || [];
-          // 确保消息按时间排序
+          // Ensure messages are sorted by time
           this.messages.sort((a, b) => new Date(a.sendTime) - new Date(b.sendTime));
         }
       } catch (error) {
-        console.error('获取消息失败:', error);
+        console.error('Failed to get messages:', error);
       }
     },
 
@@ -428,9 +428,9 @@ export default {
     },
 
     connectWebSocket() {
-      // 确保用户ID有效
+      // Ensure user ID is valid
       if (!this.currentUser || !this.currentUser.userId) {
-        console.warn('无法连接WebSocket: 用户ID无效');
+        console.warn('Cannot connect WebSocket: Invalid user ID');
         return;
       }
 
@@ -438,29 +438,29 @@ export default {
         const socket = new SockJS('http://localhost:8080/chat');
         this.stompClient = new Client({
           webSocketFactory: () => socket,
-          connectHeaders: this.headers, // 使用计算属性中的头部
+          connectHeaders: this.headers, // Use headers from computed property
           debug: (str) => console.log(str),
           reconnectDelay: 5000,
           heartbeatIncoming: 4000,
           heartbeatOutgoing: 4000,
           onConnect: () => {
-            console.log('WebSocket连接成功');
+            console.log('WebSocket connected successfully');
 
-            // 订阅消息队列
+            // Subscribe to message queue
             this.stompClient.subscribe(
                 `/private/${this.currentUser.userId}`,
                 (message) => this.handleIncomingMessage(message),
-                this.headers // 使用计算属性中的头部
+                this.headers // Use headers from computed property
             );
 
-            // 订阅在线用户列表更新
+            // Subscribe to online users list updates
             this.stompClient.subscribe(
                 '/topic/online-users',
                 (message) => this.handleOnlineUsers(message)
             );
           },
           onDisconnect: () => {
-            console.log('WebSocket已断开');
+            console.log('WebSocket disconnected');
           },
           onStompError: (frame) => {
             console.error('Broker reported error:', frame.headers?.message);
@@ -469,38 +469,38 @@ export default {
 
         this.stompClient.activate();
       } catch (error) {
-        console.error('WebSocket连接失败:', error);
+        console.error('WebSocket connection failed:', error);
       }
     },
 
     handleIncomingMessage(message) {
       try {
         const msg = JSON.parse(message.body);
-        console.log('收到消息:', msg); // 添加调试日志
+        console.log('Message received:', msg); // Debug log
 
-        // 确保消息被添加到正确的会话
+        // Ensure message is added to correct conversation
         const isActiveContact = this.activeContact === msg.senderId;
         const contact = this.contacts.find(c => c.userId === msg.senderId);
 
         if (isActiveContact) {
-          // 添加到当前聊天窗口
+          // Add to current chat window
           this.messages.push(msg);
           this.$nextTick(() => this.scrollToBottom());
         } else if (contact) {
-          // 更新联系人列表中的最后消息
+          // Update last message in contacts list
           contact.lastMessage = msg.content;
           contact.lastTime = msg.sendTime;
           contact.unreadCount = (contact.unreadCount || 0) + 1;
         } else {
-          // 新联系人：创建并添加到列表
+          // New contact: create and add to list
           this.createNewContact(msg);
         }
       } catch (e) {
-        console.error('处理消息失败:', e);
+        console.error('Failed to process message:', e);
       }
     },
 
-    // 创建新联系人
+    // Create new contact
     createNewContact(msg) {
       this.$http.get(`/users/info/${msg.senderId}`, {
         headers: this.headers
@@ -518,7 +518,7 @@ export default {
           this.contacts.unshift(newContact);
         }
       }).catch(error => {
-        console.error('获取用户信息失败:', error);
+        console.error('Failed to get user info:', error);
       });
     },
 
@@ -526,7 +526,7 @@ export default {
       try {
         this.onlineUsers = JSON.parse(message.body) || [];
       } catch (e) {
-        console.error('处理在线用户信息失败:', e);
+        console.error('Failed to process online users:', e);
       }
     },
 
@@ -540,24 +540,24 @@ export default {
         sendTime: new Date().toISOString()
       };
 
-      // 如果WebSocket已连接，通过WebSocket发送
+      // If WebSocket is connected, send via WebSocket
       if (this.stompClient && this.stompClient.connected) {
         this.stompClient.publish({
           destination: '/chat/send',
-          headers: this.headers, // 使用计算属性中的头部
+          headers: this.headers, // Use headers from computed property
           body: JSON.stringify(message)
         });
       } else {
-        console.warn('WebSocket未连接，无法发送实时消息');
-        // 降级方案：尝试通过API发送
+        console.warn('WebSocket not connected, cannot send real-time message');
+        // Fallback: try to send via API
         this.sendViaApi(message);
       }
 
-      // 添加到本地消息列表
+      // Add to local messages list
       this.addLocalMessage(message);
     },
 
-    // 通过API发送消息（WebSocket不可用时的降级方案）
+    // Send message via API (fallback when WebSocket unavailable)
     async sendViaApi(message) {
       try {
         const token = localStorage.getItem('token');
@@ -571,29 +571,29 @@ export default {
         });
 
         if (response.data.code === 1) {
-          console.log('通过API发送消息成功');
+          console.log('Message sent successfully via API');
         }
       } catch (error) {
-        console.error('通过API发送消息失败:', error);
+        console.error('Failed to send message via API:', error);
       }
     },
 
-    // 添加消息到本地列表
+    // Add message to local list
     addLocalMessage(message) {
-      // 添加到消息列表
+      // Add to messages list
       this.messages.push({
         ...message,
         senderId: this.currentUser.userId
       });
 
-      // 更新联系人最后一条消息
+      // Update contact's last message
       const contact = this.contacts.find(c => c.userId === message.receiverId);
       if (contact) {
         contact.lastMessage = message.content;
         contact.lastTime = message.sendTime;
       }
 
-      // 清空输入框并滚动到底部
+      // Clear input and scroll to bottom
       this.newMessage = '';
       this.$nextTick(() => this.scrollToBottom());
     },
@@ -616,17 +616,17 @@ export default {
     },
 
     toggleEmojiPicker() {
-      // 实现表情选择器
-      console.log('打开表情选择器');
+      // Implement emoji picker
+      console.log('Open emoji picker');
     }
   },
   mounted() {
-    // 获取路由参数中的用户ID
+    // Get user ID from route parameters
     this.routeUserId = this.$route.query.userId
         ? parseInt(this.$route.query.userId)
         : null;
 
-    // 确保按顺序执行
+    // Ensure sequential execution
     this.fetchContacts().then(() => {
       this.connectWebSocket();
 
